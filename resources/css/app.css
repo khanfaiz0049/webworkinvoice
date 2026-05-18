@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #0055a4;
+    --color-secondary: #d32d27;
+    --color-accent: #d32d27;
+    --color-dashboard-bg: #ffffff;
+    --font-sans: "Roboto", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+@layer base {
+    body {
+        @apply bg-white text-slate-900 selection:bg-[#0055a4] selection:text-white font-sans;
+    }
+}
+
+/* Custom styling to increase the line height of the Quill editor content */
+.ql-editor,
+.ql-editor p {
+    line-height: 1.8 !important;
+}
+
