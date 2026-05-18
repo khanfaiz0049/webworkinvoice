@@ -124,6 +124,19 @@
                     </div>
                     
                     <div class="pt-6 border-t border-slate-50">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-3">Upload Company Logo Image</label>
+                        <div class="flex items-center gap-4">
+                            <label for="logo" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group flex-1 text-center">
+                                <input type="file" id="logo" name="logo" class="hidden" onchange="if(this.files.length) { this.nextElementSibling.querySelector('.logo-filename-text').textContent = this.files[0].name; }">
+                                <div class="flex flex-col items-center gap-2">
+                                    <i data-lucide="image" class="w-8 h-8 text-slate-300 group-hover:text-[#0055a4] transition-colors"></i>
+                                    <span class="text-xs font-black text-slate-400 uppercase tracking-widest logo-filename-text">Click to upload Logo</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-50">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-3">Upload QR / Barcode Image</label>
                         <div class="flex items-center gap-4">
                             <label for="qr_code" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group flex-1 text-center">

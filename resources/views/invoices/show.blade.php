@@ -13,33 +13,30 @@
         }
         
         .pdf-like-view .invoice-container {
-            border: 1px solid #000;
+            border: none;
             padding: 0;
         }
         
         /* Header */
         .pdf-like-view .header {
-            text-align: center;
             padding: 10px;
             position: relative;
-            border-bottom: 1px solid #000;
+            border-bottom: none;
         }
         .pdf-like-view .logo {
-            max-height: 50px;
-            margin-bottom: 5px;
+            max-height: 80px;
+            margin-bottom: 15px;
             display: inline-block;
         }
         .pdf-like-view .meta-info {
-            position: absolute;
-            right: 10px;
-            top: 10px;
             text-align: right;
+            padding-right: 10px;
+            margin-bottom: 15px;
         }
         .pdf-like-view .meta-item {
-            margin-bottom: 2px;
-        }
-        .pdf-like-view .meta-label {
+            margin-bottom: 5px;
             font-weight: bold;
+            font-size: 13px;
         }
 
         /* To/From Section */
@@ -209,20 +206,23 @@
             <div class="invoice-container">
                 <!-- Header -->
                 <div class="header">
-                    @if($invoice->company->logo)
-                        <img src="{{ asset('storage/' . $invoice->company->logo) }}" class="logo" alt="Logo">
-                    @else
-                        <div style="font-size: 24px; font-weight: 900; color: #0055a4;">{{ $invoice->company->name }}</div>
-                    @endif
-                    
-                    <div class="meta-info">
-                        <div class="meta-item"><span class="meta-label">Date:</span> {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
-                        <div class="meta-item"><span class="meta-label">Invoice No.</span> {{ $invoice->invoice_number }}</div>
+                    <div style="text-align: center;">
+                        @if($invoice->company->logo && file_exists(public_path('storage/' . $invoice->company->logo)))
+                            <img src="{{ asset('storage/' . $invoice->company->logo) }}" class="logo" alt="Logo">
+                        @else
+                            <img src="{{ asset('storage/logo.png') }}" class="logo" alt="Logo">
+                        @endif
                     </div>
                     
-                    <div style="margin-top: 10px; font-weight: bold; font-size: 14px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }} ::</div>
+                    <div class="meta-info">
+                        <div class="meta-item">Date: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
+                        <div class="meta-item">Invoice No. {{ $invoice->invoice_number }}</div>
+                    </div>
+                    
+                    <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }}::</div>
                 </div>
 
+                <div class="invoice-body" style="border: 1px solid #000; border-bottom: none;">
                 <!-- Billing Info -->
                 <table class="billing-section" cellpadding="0" cellspacing="0">
                     <tr>
@@ -323,6 +323,7 @@
                 <!-- Amount in Words -->
                 <div class="words-section">
                     Amount in Words: {{ $invoice->amount_in_words }}
+                </div>
                 </div>
 
                 <!-- Bank & Sign -->

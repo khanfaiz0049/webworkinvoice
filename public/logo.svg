@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 75" width="300" height="75">
-  <polygon points="0,0 156,0 142,75 0,75" fill="#005fa3"/>
-  <polygon points="156,0 300,0 300,75 142,75" fill="#c32d27"/>
-  <text x="18" y="53" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="48" fill="#ffffff" letter-spacing="-2px">web</text>
-  <text x="162" y="53" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="48" fill="#ffffff" letter-spacing="-2px">work</text>
+  <polygon points="0,0 156,0 142,75 0,75" fill="#0055a4"/>
+  <polygon points="156,0 300,0 300,75 142,75" fill="#d32d27"/>
+  <text x="18" y="53" font-family="'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="48" fill="#ffffff" letter-spacing="-2px">web</text>
+  <text x="162" y="53" font-family="'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="48" fill="#ffffff" letter-spacing="-2px">work</text>
 </svg>

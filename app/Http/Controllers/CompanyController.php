@@ -39,10 +39,15 @@ class CompanyController extends Controller
             'swift_code' => 'nullable|string|max:255',
             'upi_id' => 'nullable|string|max:255',
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
         ]);
 
         if ($request->hasFile('qr_code')) {
             $validated['qr_code'] = $request->file('qr_code')->store('company_qr', 'public');
+        }
+
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('company_logo', 'public');
         }
 
         $company = Company::create($validated);
@@ -79,6 +84,7 @@ class CompanyController extends Controller
             'swift_code' => 'nullable|string|max:255',
             'upi_id' => 'nullable|string|max:255',
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
         ]);
 
         if ($request->hasFile('qr_code')) {
@@ -86,6 +92,13 @@ class CompanyController extends Controller
                 Storage::disk('public')->delete($company->qr_code);
             }
             $validated['qr_code'] = $request->file('qr_code')->store('company_qr', 'public');
+        }
+
+        if ($request->hasFile('logo')) {
+            if ($company->logo && $company->logo !== 'logo.png') {
+                Storage::disk('public')->delete($company->logo);
+            }
+            $validated['logo'] = $request->file('logo')->store('company_logo', 'public');
         }
 
         $company->update($validated);

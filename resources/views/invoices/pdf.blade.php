@@ -6,14 +6,13 @@
     <style>
         @page { margin: 20px; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #1e293b; line-height: 1.4; margin: 0; padding: 0; }
-        .invoice-container { border: 1px solid #000; padding: 0; }
+        .invoice-container { border: none; padding: 0; }
         
         /* Header */
-        .header { text-align: center; padding: 10px; position: relative; border-bottom: 1px solid #000; }
-        .logo { max-height: 50px; margin-bottom: 5px; }
-        .meta-info { position: absolute; right: 10px; top: 10px; text-align: right; }
-        .meta-item { margin-bottom: 2px; }
-        .meta-label { font-weight: bold; }
+        .header { padding: 10px; position: relative; border-bottom: none; }
+        .logo { max-height: 80px; margin-bottom: 15px; display: inline-block; }
+        .meta-info { text-align: right; padding-right: 10px; margin-bottom: 15px; }
+        .meta-item { margin-bottom: 5px; font-weight: bold; font-size: 13px; }
 
         /* To/From Section */
         .billing-section { width: 100%; border-bottom: 1px solid #000; }
@@ -58,26 +57,33 @@
     <div class="invoice-container">
         <!-- Header -->
         <div class="header">
-            @if($invoice->company->logo)
-                @if(file_exists(public_path('storage/' . $invoice->company->logo)))
-                    <img src="{{ public_path('storage/' . $invoice->company->logo) }}" class="logo">
-                @elseif(file_exists(public_path($invoice->company->logo)))
-                    <img src="{{ public_path($invoice->company->logo) }}" class="logo">
+            <div style="text-align: center;">
+                @if($invoice->company->logo && (file_exists(public_path('storage/' . $invoice->company->logo)) || file_exists(public_path($invoice->company->logo))))
+                    @if(file_exists(public_path('storage/' . $invoice->company->logo)))
+                        <img src="{{ public_path('storage/' . $invoice->company->logo) }}" class="logo">
+                    @else
+                        <img src="{{ public_path($invoice->company->logo) }}" class="logo">
+                    @endif
                 @else
-                    <img src="{{ asset('storage/' . $invoice->company->logo) }}" class="logo">
+                    @if(file_exists(public_path('storage/logo.png')))
+                        <img src="{{ public_path('storage/logo.png') }}" class="logo">
+                    @elseif(file_exists(public_path('logo.png')))
+                        <img src="{{ public_path('logo.png') }}" class="logo">
+                    @else
+                        <img src="{{ asset('storage/logo.png') }}" class="logo">
+                    @endif
                 @endif
-            @else
-                <div style="font-size: 24px; font-weight: 900; color: #0055a4;">{{ $invoice->company->name }}</div>
-            @endif
-            
-            <div class="meta-info">
-                <div class="meta-item"><span class="meta-label">Date:</span> {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
-                <div class="meta-item"><span class="meta-label">Invoice No.</span> {{ $invoice->invoice_number }}</div>
             </div>
             
-            <div style="margin-top: 10px; font-weight: bold; font-size: 14px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }} ::</div>
+            <div class="meta-info">
+                <div class="meta-item">Date: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
+                <div class="meta-item">Invoice No. {{ $invoice->invoice_number }}</div>
+            </div>
+            
+            <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }}::</div>
         </div>
 
+        <div class="invoice-body" style="border: 1px solid #000; border-bottom: none;">
         <!-- Billing Info -->
         <table class="billing-section" cellpadding="0" cellspacing="0">
             <tr>
@@ -178,6 +184,7 @@
         <!-- Amount in Words -->
         <div class="words-section">
             Amount in Words: {{ $invoice->amount_in_words }}
+        </div>
         </div>
 
         <!-- Bank & Sign -->

@@ -24,10 +24,9 @@
                 <div class="flex flex-col h-full">
                     <!-- Sidebar Header -->
                     <div class="flex items-center gap-3 px-8 h-20 border-b border-slate-100">
-                        <div class="flex items-center overflow-hidden rounded-md font-black text-xl tracking-tighter origin-left shadow-sm border border-slate-100">
-                            <div class="bg-[#0055a4] text-white px-2.5 py-1 pr-3.5" style="clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);">web</div>
-                            <div class="bg-[#d32d27] text-white px-2.5 py-1 pl-3.5 -ml-2.5">work</div>
-                        </div>
+                        <a href="{{ route('dashboard') }}" class="flex items-center">
+                            <x-application-logo class="h-8 w-auto" />
+                        </a>
                     </div>
 
                     <!-- Sidebar Links -->
