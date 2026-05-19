@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -49,5 +50,34 @@ class PaymentController extends Controller
         }
 
         return redirect()->route('payments.index')->with('success', 'Payment recorded successfully.');
+    }
+
+    public function destroy(Payment $payment)
+    {
+        try {
+            DB::beginTransaction();
+
+            if ($payment->invoice_id) {
+                $invoice = Invoice::withTrashed()->find($payment->invoice_id);
+                if ($invoice) {
+                    $newPaidAmount = max(0, $invoice->paid_amount - $payment->amount);
+                    $invoice->update([
+                        'paid_amount' => $newPaidAmount,
+                        'outstanding_amount' => $invoice->grand_total - $newPaidAmount,
+                        'status' => ($newPaidAmount >= $invoice->grand_total) 
+                            ? 'paid' 
+                            : ($newPaidAmount > 0 ? 'partial' : 'pending')
+                    ]);
+                }
+            }
+
+            $payment->delete();
+
+            DB::commit();
+            return redirect()->route('payments.index')->with('success', 'Payment undone successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error undoing payment: ' . $e->getMessage());
+        }
     }
 }

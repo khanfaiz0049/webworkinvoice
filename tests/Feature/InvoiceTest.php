@@ -150,3 +150,38 @@ test('invoice update accepts the existing invoice number', function () {
 
     expect($invoice->fresh()->invoice_number)->toBe('INV-1002');
 });
+
+test('invoice store clears hsn code when gst is disabled', function () {
+    $user = invoiceTestUser();
+    $company = invoiceTestCompany([
+        'invoice_starting_number' => 1003,
+    ]);
+    $customer = invoiceTestCustomer();
+
+    $response = $this
+        ->actingAs($user)
+        ->post(route('invoices.store'), [
+            'customer_id' => $customer->id,
+            'invoice_number' => (string) $company->invoice_starting_number,
+            'invoice_date' => now()->toDateString(),
+            'gst_enabled' => 0,
+            'items' => [
+                [
+                    'description' => 'Hosting Renewal',
+                    'quantity' => 1,
+                    'price' => 1200,
+                    'discount' => 0,
+                    'gst_percentage' => 0,
+                    'hsn_sac' => '998314',
+                ],
+            ],
+        ]);
+
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect(route('invoices.index'));
+
+    $invoice = Invoice::latest('id')->first();
+
+    expect($invoice->gst_enabled)->toBeFalse();
+    expect($invoice->items()->first()->hsn_sac)->toBeNull();
+});

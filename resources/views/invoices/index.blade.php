@@ -65,6 +65,13 @@
                             </td>
                             <td class="px-6 py-6 text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" class="inline invoice-undo-form">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" onclick="confirmInvoiceUndo(this)" class="p-2 text-slate-400 hover:text-[#d32d27] transition-colors shadow-sm bg-white rounded-lg border border-slate-100 flex items-center justify-center" title="Undo / Delete Invoice">
+                                            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                                        </button>
+                                    </form>
                                     <a href="{{ route('invoices.show', $invoice) }}" class="p-2 text-slate-400 hover:text-[#0055a4] transition-colors shadow-sm bg-white rounded-lg border border-slate-100 flex items-center justify-center"><i data-lucide="eye" class="w-5 h-5"></i></a>
                                     <a href="{{ route('invoices.edit', $invoice) }}" class="p-2 text-slate-400 hover:text-amber-500 transition-colors shadow-sm bg-white rounded-lg border border-slate-100 flex items-center justify-center"><i data-lucide="edit-3" class="w-5 h-5"></i></a>
                                     <a href="{{ route('invoices.download', $invoice) }}" class="p-2 text-slate-400 hover:text-[#d32d27] transition-colors shadow-sm bg-white rounded-lg border border-slate-100 flex items-center justify-center"><i data-lucide="download" class="w-5 h-5"></i></a>
@@ -93,4 +100,34 @@
             </div>
         @endif
     </div>
+
+    @push('scripts')
+    <script>
+        function confirmInvoiceUndo(button) {
+            Swal.fire({
+                title: 'Undo Invoice?',
+                text: "This will delete the invoice and any payments recorded against it!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d32d27',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, undo it!',
+                cancelButtonText: 'Cancel',
+                background: '#ffffff',
+                color: '#0f172a',
+                customClass: {
+                    popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
+                    title: 'text-2xl font-black uppercase tracking-tight italic text-[#d32d27]',
+                    htmlContainer: 'text-sm font-medium text-slate-500 mt-2',
+                    confirmButton: 'bg-[#d32d27] hover:bg-[#b21f24] text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 active:scale-95 text-xs uppercase tracking-widest outline-none border-none mr-2',
+                    cancelButton: 'bg-slate-500 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 active:scale-95 text-xs uppercase tracking-widest outline-none border-none'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    button.closest('form').submit();
+                }
+            });
+        }
+    </script>
+    @endpush
 </x-app-layout>

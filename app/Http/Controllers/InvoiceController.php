@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Customer;
 use App\Models\Company;
+use App\Models\HsnMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -48,15 +49,28 @@ class InvoiceController extends Controller
     {
         $customers = Customer::all();
         $companies = Company::all();
+        $hsnMasters = HsnMaster::all();
         $activeCompany = $this->resolveActiveCompany();
-        return view('invoices.create', compact('customers', 'companies', 'activeCompany'));
+        return view('invoices.create', compact('customers', 'companies', 'activeCompany', 'hsnMasters'));
     }
 
     public function store(Request $request)
     {
+        $activeCompany = $this->resolveActiveCompany();
+        $activeCompanyId = optional($activeCompany)->id;
+
+        if (! $activeCompanyId) {
+            return back()->withInput()->with('error', 'Please select a billing company before creating an invoice.');
+        }
+
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'invoice_number' => 'required|string|max:255',
+            'invoice_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('invoices', 'invoice_number')->where('company_id', $activeCompanyId),
+            ],
             'invoice_date' => 'required|date',
             'renewal_date' => 'nullable|date',
             'renewal_text' => 'nullable|array',
@@ -73,11 +87,6 @@ class InvoiceController extends Controller
         try {
             DB::beginTransaction();
 
-            $activeCompanyId = optional($this->resolveActiveCompany())->id;
-            if (! $activeCompanyId) {
-                return back()->withInput()->with('error', 'Please select a billing company before creating an invoice.');
-            }
-
             $customer = Customer::findOrFail($request->customer_id);
             $gstType = $customer->gst_type; // 'Intra State' or 'Inter State'
             $gstEnabled = $request->boolean('gst_enabled');
@@ -93,7 +102,7 @@ class InvoiceController extends Controller
                 $qty        = 1;
                 $rate       = (float) $item['price'];
                 $gstPercent = $gstEnabled ? 18 : 0;
-                $hsn_sac    = $item['hsn_sac'] ?? null;
+                $hsn_sac    = $gstEnabled ? ($item['hsn_sac'] ?? null) : null;
 
                 $itemSubtotal = $qty * $rate;
                 $itemGst      = round(($itemSubtotal * $gstPercent) / 100, 2);
@@ -169,26 +178,37 @@ class InvoiceController extends Controller
     {
         $invoice->load(['items', 'customer']);
         $customers = Customer::all();
+        $hsnMasters = HsnMaster::all();
         $activeCompany = $invoice->company;
         
         // Map items to Alpine structure
-        $items = $invoice->items->map(function($item) {
+        $items = $invoice->items->map(function($item) use ($hsnMasters) {
+            $matchedHsn = $hsnMasters->firstWhere('hsn_code', $item->hsn_sac);
+
             return [
                 'description' => $item->description,
                 'amount' => $item->rate,
                 'gst' => $item->gst_percentage,
-                'hsn' => $item->hsn_sac
+                'hsn' => $item->hsn_sac,
+                'service_id' => $matchedHsn?->id ? (string) $matchedHsn->id : '',
             ];
         });
 
-        return view('invoices.edit', compact('invoice', 'customers', 'activeCompany', 'items'));
+        return view('invoices.edit', compact('invoice', 'customers', 'activeCompany', 'items', 'hsnMasters'));
     }
 
     public function update(Request $request, Invoice $invoice)
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'invoice_number' => ['required', 'string', 'max:255', Rule::unique('invoices', 'invoice_number')->ignore($invoice->id)],
+            'invoice_number' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('invoices', 'invoice_number')
+                    ->where('company_id', $invoice->company_id)
+                    ->ignore($invoice->id),
+            ],
             'invoice_date' => 'required|date',
             'renewal_date' => 'nullable|date',
             'renewal_text' => 'nullable|array',
@@ -219,7 +239,7 @@ class InvoiceController extends Controller
                 $qty        = 1;
                 $rate       = (float) $item['price'];
                 $gstPercent = $gstEnabled ? 18 : 0;
-                $hsn_sac    = $item['hsn_sac'] ?? null;
+                $hsn_sac    = $gstEnabled ? ($item['hsn_sac'] ?? null) : null;
 
                 $itemSubtotal = $qty * $rate;
                 $itemGst      = round(($itemSubtotal * $gstPercent) / 100, 2);
@@ -280,8 +300,21 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice)
     {
-        $invoice->delete();
-        return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
+        try {
+            DB::beginTransaction();
+
+            // Soft delete all payments associated with this invoice
+            $invoice->payments()->delete();
+
+            // Soft delete the invoice itself
+            $invoice->delete();
+
+            DB::commit();
+            return redirect()->route('invoices.index')->with('success', 'Invoice undone and deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error undoing invoice: ' . $e->getMessage());
+        }
     }
 
     private function resolveActiveCompany(): ?Company

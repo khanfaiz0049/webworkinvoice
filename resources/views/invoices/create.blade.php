@@ -11,10 +11,15 @@
         items: [{ description: "", amount: 0, gst: 18, hsn: "" }],
         customers: @json($customers),
         selectedCustomerId: "",
+        selectedCustomerName: "",
         gstDisabled: false,
         gstType: "intra_state",
         isIntraState: true,
         isInterState: false,
+        searchQuery: "",
+        searchOpen: false,
+        searchLoading: false,
+        searchResults: [],
         init() {
             this.$watch("selectedCustomerId", (id) => {
                 const customer = this.customers.find(c => String(c.id) === String(id));
@@ -22,6 +27,35 @@
                 this.isIntraState = this.gstType === "intra_state";
                 this.isInterState = this.gstType === "inter_state";
             });
+            this.searchResults = this.customers.slice(0, 10);
+        },
+        async searchCustomers() {
+            if (!this.searchQuery.trim()) {
+                this.searchResults = this.customers.slice(0, 10);
+                return;
+            }
+            this.searchLoading = true;
+            try {
+                const url = new URL("{{ route('api.customers.search') }}");
+                url.searchParams.append("q", this.searchQuery);
+                const response = await fetch(url);
+                if (response.ok) {
+                    this.searchResults = await response.json();
+                }
+            } catch (error) {
+                console.error("Error searching customers:", error);
+            } finally {
+                this.searchLoading = false;
+            }
+        },
+        selectCustomer(customer) {
+            this.selectedCustomerId = customer.id;
+            this.selectedCustomerName = customer.company_name ? `${customer.company_name} (${customer.name})` : customer.name;
+            this.searchOpen = false;
+            this.searchQuery = "";
+            if (!this.customers.some(c => String(c.id) === String(customer.id))) {
+                this.customers.push(customer);
+            }
         },
         addItem() {
             this.items.push({ description: "", amount: 0, gst: 18, hsn: "" });
@@ -117,44 +151,60 @@
                 </div>
 
                 <div class="p-10">
-                    <div class="mb-8 flex justify-end">
-                        <div class="w-full max-w-[430px] rounded-[1.75rem] border border-slate-200 bg-gradient-to-br from-white to-slate-50 px-5 py-4 shadow-sm">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="pr-2">
-                                    <p class="text-xs font-black uppercase tracking-widest text-slate-900">GST Preference</p>
-                                    <p class="mt-1 text-[11px] font-bold leading-5 text-slate-400">Keep GST on by default, or switch to create a GST-free invoice.</p>
-                                </div>
-                                <button type="button"
-                                    @click="gstDisabled = !gstDisabled"
-                                    :aria-pressed="gstDisabled.toString()"
-                                    class="flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0055a4]/30">
-                                    <span :class="gstDisabled ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 shadow-sm'"
-                                        class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">GST</span>
-                                    <span :class="gstDisabled ? 'translate-x-0 bg-[#d32d27]' : 'translate-x-0 bg-[#0055a4]'"
-                                        class="mx-1 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm transition">
-                                        <i data-lucide="power" class="h-3.5 w-3.5"></i>
-                                    </span>
-                                    <span :class="gstDisabled ? 'bg-amber-50 text-amber-700 shadow-sm' : 'bg-slate-100 text-slate-400'"
-                                        class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">No GST</span>
+                    <div class="mb-8 bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-[2rem] p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <!-- Customer Selection (Left side) -->
+                        <div class="flex-grow space-y-2 relative">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer / Client</label>
+                            <div class="relative">
+                                <!-- Search Input Trigger -->
+                                <button type="button" @click="searchOpen = !searchOpen; if(searchOpen) { $nextTick(() => $refs.searchInput.focus()); searchCustomers(); }" 
+                                    class="w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] hover:border-[#0055a4] transition-all font-bold text-slate-900 text-left shadow-sm">
+                                    <span x-text="selectedCustomerName || 'Select client...'" class="block truncate text-slate-500" :class="selectedCustomerName ? 'text-slate-900 font-bold' : ''"></span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="searchOpen ? 'rotate-180 text-[#0055a4]' : ''"></i>
                                 </button>
-                            </div>
-                            <div class="mt-3 flex justify-end">
-                                <span x-text="gstDisabled ? 'GST Disabled' : 'GST Enabled'"
-                                    :class="gstDisabled ? 'text-[#d32d27]' : 'text-[#0055a4]'"
-                                    class="text-[10px] font-black uppercase tracking-[0.24em]"></span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer</label>
-                            <select name="customer_id" x-model="selectedCustomerId" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
-                                <option value="">Select client...</option>
-                                @foreach($customers as $customer)
-                                    <option value="{{ $customer->id }}">{{ $customer->name }} ({{ $customer->state }})</option>
-                                @endforeach
-                            </select>
+                                <input type="hidden" name="customer_id" :value="selectedCustomerId" required>
+
+                                <!-- Dropdown panel -->
+                                <div x-show="searchOpen" x-transition 
+                                    @click.away="searchOpen = false" 
+                                    style="display: none;" 
+                                    class="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl p-3 space-y-3 z-50">
+                                    
+                                    <!-- Search field -->
+                                    <div class="relative">
+                                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                        <input type="text" x-ref="searchInput" x-model="searchQuery" @input.debounce.300ms="searchCustomers()" 
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-sm placeholder:text-slate-400" 
+                                            placeholder="Search customer by name, company, email, phone...">
+                                        <div x-show="searchLoading" class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                                            <svg class="animate-spin h-4 w-4 text-[#0055a4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Search results list -->
+                                    <div class="max-h-60 overflow-y-auto space-y-1 pr-1">
+                                        <template x-for="customer in searchResults" :key="customer.id">
+                                            <button type="button" @click="selectCustomer(customer)" 
+                                                class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 active:bg-blue-50/50 rounded-xl text-left transition-all group">
+                                                <div>
+                                                    <div class="font-bold text-slate-900 text-sm group-hover:text-[#0055a4] transition-colors" x-text="customer.company_name || customer.name"></div>
+                                                    <div class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5" x-text="(customer.company_name ? customer.name + ' • ' : '') + customer.state"></div>
+                                                </div>
+                                                <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 group-hover:bg-[#0055a4]/10 group-hover:text-[#0055a4] transition-all" 
+                                                    x-text="customer.gst_type === 'intra_state' ? 'Intra State' : 'Inter State'"></span>
+                                            </button>
+                                        </template>
+
+                                        <div x-show="!searchLoading && searchResults.length === 0" class="py-6 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
+                                            No customers found
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- GST Type Badge -->
                             <div class="flex items-center gap-2 px-1 mt-1" x-show="selectedCustomerId !== ''">
                                 <span class="text-[10px] font-black uppercase tracking-widest"
@@ -163,6 +213,30 @@
                                 ></span>
                             </div>
                         </div>
+
+                        <!-- GST Preference Switcher (Right side) -->
+                        <div class="flex-shrink-0 flex flex-col items-center lg:items-end justify-center space-y-2 lg:border-l lg:border-slate-200 lg:pl-8 pt-4 lg:pt-0">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">GST Preference</label>
+                            <button type="button"
+                                @click="gstDisabled = !gstDisabled"
+                                :aria-pressed="gstDisabled.toString()"
+                                class="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0055a4]/30">
+                                <span :class="gstDisabled ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 shadow-sm'"
+                                    class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">GST</span>
+                                <span :class="gstDisabled ? 'translate-x-0 bg-[#d32d27]' : 'translate-x-0 bg-[#0055a4]'"
+                                    class="mx-1 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm transition">
+                                    <i data-lucide="power" class="h-3.5 w-3.5"></i>
+                                </span>
+                                <span :class="gstDisabled ? 'bg-amber-50 text-amber-700 shadow-sm' : 'bg-slate-100 text-slate-400'"
+                                    class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">No GST</span>
+                            </button>
+                            <span x-text="gstDisabled ? 'GST Disabled' : 'GST Enabled'"
+                                :class="gstDisabled ? 'text-[#d32d27]' : 'text-[#0055a4]'"
+                                class="text-[10px] font-black uppercase tracking-[0.24em] mt-1 block"></span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
                             <input type="text" name="invoice_number" value="{{ $activeCompany ? $activeCompany->invoice_starting_number : '' }}" readonly required class="w-full bg-slate-100 border-slate-200 rounded-2xl px-5 py-4 cursor-not-allowed focus:ring-0 transition-all font-bold text-slate-500">

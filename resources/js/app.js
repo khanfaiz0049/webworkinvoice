@@ -6,6 +6,7 @@ import ApexCharts from 'apexcharts';
 
 window.Alpine = Alpine;
 window.ApexCharts = ApexCharts;
+window.lucide = { createIcons, icons };
 
 // Initialize Lucide Icons
 document.addEventListener('DOMContentLoaded', () => {

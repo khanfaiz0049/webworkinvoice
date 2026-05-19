@@ -46,6 +46,10 @@
                             <i data-lucide="users" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">Customers</span>
                         </a>
+                        <a href="{{ route('hsn-masters.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('hsn-masters.*') ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0055a4]' }}">
+                            <i data-lucide="hash" class="w-5 h-5"></i>
+                            <span class="uppercase tracking-widest text-xs font-black">HSN Master</span>
+                        </a>
                         <a href="{{ route('invoices.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('invoices.*') ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0055a4]' }}">
                             <i data-lucide="file-text" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">Invoices</span>

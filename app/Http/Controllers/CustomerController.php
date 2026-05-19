@@ -7,9 +7,37 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->get();
+        $query = Customer::latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('reference_name', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('whatsapp', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('gst_number', 'like', "%{$search}%")
+                  ->orWhere('pan_number', 'like', "%{$search}%")
+                  ->orWhere('gst_type', 'like', "%{$search}%")
+                  ->orWhere('billing_address', 'like', "%{$search}%")
+                  ->orWhere('shipping_address', 'like', "%{$search}%")
+                  ->orWhere('state', 'like', "%{$search}%")
+                  ->orWhere('country', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%")
+                  ->orWhere('status', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->get();
+
+        if ($request->ajax()) {
+            return view('customers.partials.table', compact('customers'))->render();
+        }
+
         return view('customers.index', compact('customers'));
     }
 
@@ -22,6 +50,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'reference_name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:255',
             'whatsapp' => 'nullable|string|max:255',
@@ -52,6 +81,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'reference_name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:255',
             'whatsapp' => 'nullable|string|max:255',
@@ -77,5 +107,23 @@ class CustomerController extends Controller
     {
         $customer->delete();
         return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->input('q');
+        $query = Customer::latest();
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+        
+        $customers = $query->limit(20)->get(['id', 'name', 'company_name', 'state', 'gst_type']);
+        return response()->json($customers);
     }
 }

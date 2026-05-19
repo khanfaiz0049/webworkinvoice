@@ -20,11 +20,15 @@
                             <input type="text" name="name" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
                         <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Reference Name</label>
+                            <input type="text" name="reference_name" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer Company Name</label>
                             <input type="text" name="company_name" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">GST Number</label>
                             <input type="text" name="gst_number" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
@@ -76,10 +80,6 @@
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">State</label>
                             <input type="text" name="state" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Country</label>
-                            <input type="text" name="country" value="India" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Status</label>

@@ -222,12 +222,6 @@
                     <div class="meta-info">
                         <div class="meta-item">Date: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
                         <div class="meta-item">Invoice No. {{ $invoice->invoice_number }}</div>
-                        @if($invoice->renewal_date)
-                            <div class="meta-item text-amber-600" style="color: #d97706;">Renewal: {{ \Carbon\Carbon::parse($invoice->renewal_date)->format('d-m-Y') }}</div>
-                        @endif
-                        @if($invoice->renewal_text)
-                            <div class="meta-item text-slate-600" style="color: #475569; font-weight: normal; font-size: 11px;">Terms: {{ $invoice->renewal_text }}</div>
-                        @endif
                     </div>
                     
                     <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }}::</div>
@@ -293,7 +287,7 @@
                 <table class="totals-table" cellpadding="0" cellspacing="0">
                     <tr>
                         <td class="summary-label" style="text-align: right; font-weight: bold; position: relative;">
-                            @if($invoice->items->first()?->hsn_sac)
+                            @if($invoice->gst_enabled && $invoice->items->first()?->hsn_sac)
                                 <span style="float: left; font-weight: bold; font-size: 11px; color: #000;">HSN Code {{ $invoice->items->first()->hsn_sac }}</span>
                             @endif
                             Total
