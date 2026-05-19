@@ -9,15 +9,25 @@ use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\Rule;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::with(['customer', 'company'])
-            ->latest()
-            ->get();
-        return view('invoices.index', compact('invoices'));
+        $perPage = $request->query('per_page', 10);
+        
+        $query = Invoice::with(['customer', 'company'])
+            ->latest();
+
+        if ($perPage === 'all') {
+            $invoices = $query->get();
+        } else {
+            $perPage = max(1, (int)$perPage);
+            $invoices = $query->paginate($perPage)->withQueryString();
+        }
+
+        return view('invoices.index', compact('invoices', 'perPage'));
     }
 
     public function show(Invoice $invoice)
@@ -30,14 +40,15 @@ class InvoiceController extends Controller
     {
         $invoice->load(['customer', 'company', 'items']);
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
-        return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+        $safeFilename = 'invoice-' . str_replace(['/', '\\'], '-', $invoice->invoice_number) . '.pdf';
+        return $pdf->download($safeFilename);
     }
 
     public function create()
     {
         $customers = Customer::all();
         $companies = Company::all();
-        $activeCompany = session('active_company_id') ? Company::find(session('active_company_id')) : null;
+        $activeCompany = $this->resolveActiveCompany();
         return view('invoices.create', compact('customers', 'companies', 'activeCompany'));
     }
 
@@ -47,6 +58,8 @@ class InvoiceController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'invoice_number' => 'required|string|max:255',
             'invoice_date' => 'required|date',
+            'renewal_date' => 'nullable|date',
+            'renewal_text' => 'nullable|string|max:255',
             'gst_enabled' => 'required|boolean',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -59,7 +72,11 @@ class InvoiceController extends Controller
         try {
             DB::beginTransaction();
 
-            $activeCompanyId = session('active_company_id');
+            $activeCompanyId = optional($this->resolveActiveCompany())->id;
+            if (! $activeCompanyId) {
+                return back()->withInput()->with('error', 'Please select a billing company before creating an invoice.');
+            }
+
             $customer = Customer::findOrFail($request->customer_id);
             $gstType = $customer->gst_type; // 'Intra State' or 'Inter State'
             $gstEnabled = $request->boolean('gst_enabled');
@@ -83,10 +100,10 @@ class InvoiceController extends Controller
 
                 $cgst = $sgst = $igst = 0;
                 if ($gstType === 'intra_state') {
+                    $igst = $itemGst;
+                } else {
                     $cgst = round($itemGst / 2, 2);
                     $sgst = round($itemGst / 2, 2);
-                } else {
-                    $igst = $itemGst;
                 }
 
                 $itemsData[] = [
@@ -115,6 +132,8 @@ class InvoiceController extends Controller
                 'customer_id'        => $request->customer_id,
                 'invoice_number'     => $request->invoice_number,
                 'invoice_date'       => $request->invoice_date,
+                'renewal_date'       => $request->renewal_date,
+                'renewal_text'       => $request->renewal_text,
                 'status'             => 'pending',
                 'subtotal'           => $subtotal,
                 'taxable_amount'     => $subtotal,
@@ -162,8 +181,10 @@ class InvoiceController extends Controller
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'invoice_number' => 'required|string|max:255',
+            'invoice_number' => ['required', 'string', 'max:255', Rule::unique('invoices', 'invoice_number')->ignore($invoice->id)],
             'invoice_date' => 'required|date',
+            'renewal_date' => 'nullable|date',
+            'renewal_text' => 'nullable|string|max:255',
             'gst_enabled' => 'required|boolean',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -198,10 +219,10 @@ class InvoiceController extends Controller
 
                 $cgst = $sgst = $igst = 0;
                 if ($gstType === 'intra_state') {
+                    $igst = $itemGst;
+                } else {
                     $cgst = round($itemGst / 2, 2);
                     $sgst = round($itemGst / 2, 2);
-                } else {
-                    $igst = $itemGst;
                 }
 
                 $invoice->items()->create([
@@ -228,6 +249,8 @@ class InvoiceController extends Controller
                 'customer_id'        => $request->customer_id,
                 'invoice_number'     => $request->invoice_number,
                 'invoice_date'       => $request->invoice_date,
+                'renewal_date'       => $request->renewal_date,
+                'renewal_text'       => $request->renewal_text,
                 'subtotal'           => $subtotal,
                 'taxable_amount'     => $subtotal,
                 'gst_enabled'        => $gstEnabled,
@@ -251,5 +274,16 @@ class InvoiceController extends Controller
     {
         $invoice->delete();
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
+    }
+
+    private function resolveActiveCompany(): ?Company
+    {
+        $activeCompanyId = session('active_company_id') ?: optional(auth()->user())->active_company_id;
+
+        if ($activeCompanyId) {
+            return Company::find($activeCompanyId);
+        }
+
+        return Company::query()->first();
     }
 }

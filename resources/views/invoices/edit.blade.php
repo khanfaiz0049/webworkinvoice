@@ -39,13 +39,13 @@
             return this.calculateSubtotal() * 0.18;
         },
         calculateCgst() {
-            return this.isIntraState ? this.calculateTotalGst() / 2 : 0;
+            return this.isInterState ? this.calculateTotalGst() / 2 : 0;
         },
         calculateSgst() {
-            return this.isIntraState ? this.calculateTotalGst() / 2 : 0;
+            return this.isInterState ? this.calculateTotalGst() / 2 : 0;
         },
         calculateIgst() {
-            return this.isInterState ? this.calculateTotalGst() : 0;
+            return this.isIntraState ? this.calculateTotalGst() : 0;
         },
         calculateGrandTotal() {
             return this.calculateSubtotal() + this.calculateTotalGst();
@@ -70,7 +70,7 @@
                             </div>
                             <div>
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Billing From</p>
-                                <p class="text-xs font-black text-slate-900 mt-1 uppercase">{{ $activeCompany->name }}</p>
+                                <p class="text-xs font-black text-slate-900 mt-1 uppercase">{{ $activeCompany?->name ?? 'No Company Selected' }}</p>
                             </div>
                         </div>
                     </div>
@@ -106,32 +106,40 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer</label>
-                        <select name="customer_id" x-model="selectedCustomerId" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
-                            <option value="">Select client...</option>
-                            @foreach($customers as $customer)
-                                <option value="{{ $customer->id }}">{{ $customer->company_name ?: $customer->name }}</option>
-                            @endforeach
-                        </select>
-                        <!-- GST Type Badge -->
-                        <div class="flex items-center gap-2 px-1 mt-1" x-show="selectedCustomerId !== ''">
-                            <span class="text-[10px] font-black uppercase tracking-widest"
-                                :class="gstType === 'intra_state' ? 'text-emerald-600' : 'text-violet-600'"
-                                x-text="gstType === 'intra_state' ? '⚡ Intra State — CGST + SGST applies' : '🌐 Inter State — IGST applies'"
-                            ></span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer</label>
+                            <select name="customer_id" x-model="selectedCustomerId" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                                <option value="">Select client...</option>
+                                @foreach($customers as $customer)
+                                    <option value="{{ $customer->id }}">{{ $customer->company_name ?: $customer->name }}</option>
+                                @endforeach
+                            </select>
+                            <!-- GST Type Badge -->
+                            <div class="flex items-center gap-2 px-1 mt-1" x-show="selectedCustomerId !== ''">
+                                <span class="text-[10px] font-black uppercase tracking-widest"
+                                    :class="gstType === 'intra_state' ? 'text-violet-600' : 'text-emerald-600'"
+                                    x-text="gstType === 'intra_state' ? 'Intra State - IGST applies' : 'Inter State - CGST + SGST applies'"
+                                ></span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
+                            <input type="text" name="invoice_number" value="{{ $invoice->invoice_number }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 uppercase">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Date</label>
+                            <input type="date" name="invoice_date" value="{{ $invoice->invoice_date }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Renewals</label>
+                            <input type="date" name="renewal_date" value="{{ $invoice->renewal_date }}" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Renewal Terms</label>
+                            <input type="text" name="renewal_text" value="{{ $invoice->renewal_text }}" placeholder="e.g. Yearly, 10% raise" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
-                        <input type="text" name="invoice_number" value="{{ $invoice->invoice_number }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 uppercase">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Date</label>
-                        <input type="date" name="invoice_date" value="{{ $invoice->invoice_date }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
-                    </div>
-                </div>
                 </div>
             </div>
 
@@ -183,9 +191,9 @@
                                         </div>
 
                                         <div class="space-y-2">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block text-right lg:text-left">Amount (INR)</label>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block text-right lg:text-left">Amount</label>
                                             <div class="relative group">
-                                                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-sm select-none">₹</div>
+                                                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-sm select-none">Rs.</div>
                                                 <input type="number" :name="'items['+index+'][price]'" x-model="item.amount" step="0.01"
                                                     class="w-full bg-slate-50 border-slate-200 rounded-xl pl-9 pr-4 py-3.5 focus:bg-white focus:ring-1 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-right text-lg"
                                                     placeholder="0.00" required>
@@ -227,34 +235,34 @@
 
                             <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                                 <span>Subtotal</span>
-                                <span class="text-slate-900 font-black" x-text="'₹' + calculateSubtotal().toFixed(2)"></span>
+                                <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateSubtotal().toFixed(2)"></span>
                             </div>
 
                             <div x-show="gstDisabled" class="print:hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-amber-700">
                                 GST disabled for this invoice
                             </div>
 
-                            <!-- Intra State: CGST + SGST -->
-                            <div x-show="!gstDisabled && isIntraState" class="space-y-3">
+                            <!-- Intra State: IGST -->
+                            <div x-show="!gstDisabled && isIntraState" class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                <span>IGST (18%)</span>
+                                <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateIgst().toFixed(2)"></span>
+                            </div>
+
+                            <!-- Inter State: CGST + SGST -->
+                            <div x-show="!gstDisabled && isInterState" class="space-y-3">
                                 <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                                     <span>CGST (9%)</span>
-                                    <span class="text-slate-900 font-black" x-text="'₹' + calculateCgst().toFixed(2)"></span>
+                                    <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateCgst().toFixed(2)"></span>
                                 </div>
                                 <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                                     <span>SGST (9%)</span>
-                                    <span class="text-slate-900 font-black" x-text="'₹' + calculateSgst().toFixed(2)"></span>
+                                    <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateSgst().toFixed(2)"></span>
                                 </div>
-                            </div>
-
-                            <!-- Inter State: IGST -->
-                            <div x-show="!gstDisabled && isInterState" class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                <span>IGST (18%)</span>
-                                <span class="text-slate-900 font-black" x-text="'₹' + calculateIgst().toFixed(2)"></span>
                             </div>
 
                             <div class="flex justify-between pt-4 border-t border-slate-200">
                                 <span class="text-xs font-black text-slate-900 uppercase tracking-widest">Grand Total</span>
-                                <span class="text-2xl font-black text-[#d32d27] italic tracking-tighter" x-text="'₹' + calculateGrandTotal().toFixed(2)"></span>
+                                <span class="text-2xl font-black text-[#d32d27] italic tracking-tighter" x-text="'Rs. ' + calculateGrandTotal().toFixed(2)"></span>
                             </div>
                         </div>
                     </div>

@@ -15,7 +15,7 @@ class Invoice extends Model
         'company_id', 'customer_id', 'invoice_number', 'invoice_date', 'due_date', 'status',
         'notes', 'terms_conditions', 'subtotal', 'discount_amount', 'taxable_amount',
         'cgst', 'sgst', 'igst', 'total_gst', 'grand_total', 'paid_amount', 'outstanding_amount',
-        'gst_enabled'
+        'gst_enabled', 'renewal_date', 'renewal_text'
     ];
 
     protected $casts = [

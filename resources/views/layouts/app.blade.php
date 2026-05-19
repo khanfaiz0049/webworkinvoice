@@ -180,5 +180,67 @@
         </div>
 
         @stack('scripts')
+
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        @if (session('success') || session('error') || session('status'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    @if (session('success'))
+                        Swal.fire({
+                            title: 'Success!',
+                            text: "{{ session('success') }}",
+                            icon: 'success',
+                            confirmButtonText: 'Great',
+                            confirmButtonColor: '#0055a4',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            customClass: {
+                                popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
+                                title: 'text-2xl font-black uppercase tracking-tight italic text-[#0055a4]',
+                                htmlContainer: 'text-sm font-medium text-slate-500 mt-2',
+                                confirmButton: 'bg-[#0055a4] hover:bg-[#004482] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg active:scale-95 text-xs uppercase tracking-widest outline-none border-none focus:ring-2 focus:ring-[#0055a4]/20'
+                            }
+                        });
+                    @endif
+
+                    @if (session('status'))
+                        Swal.fire({
+                            title: 'Status Update',
+                            text: "{{ session('status') }}",
+                            icon: 'info',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#0055a4',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            customClass: {
+                                popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
+                                title: 'text-2xl font-black uppercase tracking-tight italic text-[#0055a4]',
+                                htmlContainer: 'text-sm font-medium text-slate-500 mt-2',
+                                confirmButton: 'bg-[#0055a4] hover:bg-[#004482] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg active:scale-95 text-xs uppercase tracking-widest outline-none border-none focus:ring-2 focus:ring-[#0055a4]/20'
+                            }
+                        });
+                    @endif
+
+                    @if (session('error'))
+                        Swal.fire({
+                            title: 'Error!',
+                            text: "{{ session('error') }}",
+                            icon: 'error',
+                            confirmButtonText: 'Dismiss',
+                            confirmButtonColor: '#d32d27',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            customClass: {
+                                popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
+                                title: 'text-2xl font-black uppercase tracking-tight italic text-[#d32d27]',
+                                htmlContainer: 'text-sm font-medium text-slate-500 mt-2',
+                                confirmButton: 'bg-[#d32d27] hover:bg-[#b21f24] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg active:scale-95 text-xs uppercase tracking-widest outline-none border-none focus:ring-2 focus:ring-[#d32d27]/20'
+                            }
+                        });
+                    @endif
+                });
+            </script>
+        @endif
     </body>
 </html>
