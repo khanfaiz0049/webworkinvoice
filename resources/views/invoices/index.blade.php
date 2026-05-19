@@ -45,8 +45,8 @@
                         <tr class="group hover:bg-blue-50/30 transition-colors">
                             <td class="px-6 py-6 font-bold text-slate-900 uppercase tracking-tight italic">{{ $invoice->invoice_number }}</td>
                             <td class="px-6 py-6">
-                                <div class="text-sm font-bold text-slate-900">{{ $invoice->customer->name }}</div>
-                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $invoice->company->name }}</div>
+                                <div class="text-sm font-bold text-slate-900">{{ $invoice->customer?->name ?? 'Deleted Customer' }}</div>
+                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $invoice->company?->name ?? 'Deleted Company' }}</div>
                             </td>
                              <td class="px-6 py-6 text-sm text-slate-500 font-medium">
                                  <div>{{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d M, Y') }}</div>

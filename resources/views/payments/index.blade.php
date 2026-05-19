@@ -31,14 +31,19 @@
                         <tr class="group hover:bg-blue-50/30 transition-colors">
                             <td class="px-10 py-6 text-sm text-slate-500 font-bold uppercase tracking-tight italic">{{ \Carbon\Carbon::parse($payment->payment_date)->format('d M, Y') }}</td>
                             <td class="px-10 py-6">
-                                <div class="font-bold text-slate-900 uppercase tracking-tight italic">{{ $payment->customer->name }}</div>
-                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $payment->invoice->company->name ?? 'N/A' }}</div>
+                                <div class="font-bold text-slate-900 uppercase tracking-tight italic">{{ $payment->customer?->name ?? 'Deleted Customer' }}</div>
+                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $payment->invoice?->company?->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-10 py-6 text-xs font-black text-[#0055a4] uppercase tracking-widest">{{ $payment->invoice ? $payment->invoice->invoice_number : 'General' }}</td>
                             <td class="px-10 py-6">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-600">
                                     {{ $payment->payment_method }}
                                 </span>
+                                @if($payment->received_in)
+                                <div class="mt-2 text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                    In: {{ $payment->received_in }}
+                                </div>
+                                @endif
                             </td>
                             <td class="px-10 py-6 font-black text-slate-900 italic">₹{{ number_format($payment->amount, 2) }}</td>
                             <td class="px-10 py-6 text-right">

@@ -49,6 +49,10 @@
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">PAN Number</label>
                         <input type="text" name="pan_number" value="{{ old('pan_number', $company->pan_number) }}" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                     </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Starting Invoice Number</label>
+                        <input type="number" name="invoice_starting_number" value="{{ old('invoice_starting_number', $company->invoice_starting_number) }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                    </div>
                 </div>
             </div>
 

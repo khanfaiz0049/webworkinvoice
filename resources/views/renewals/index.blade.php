@@ -31,8 +31,8 @@
                         <tr class="group hover:bg-red-50/30 transition-colors">
                             <td class="px-10 py-6 font-bold text-slate-900 uppercase tracking-tight italic">{{ $renewal->name }}</td>
                             <td class="px-10 py-6">
-                                <div class="text-sm font-bold text-slate-600 italic">{{ $renewal->customer->name }}</div>
-                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $renewal->company->name }}</div>
+                                <div class="text-sm font-bold text-slate-600 italic">{{ $renewal->customer?->name ?? 'Deleted Customer' }}</div>
+                                <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $renewal->company?->name ?? 'Deleted Company' }}</div>
                             </td>
                             <td class="px-10 py-6 text-sm {{ \Carbon\Carbon::parse($renewal->due_date)->isPast() ? 'text-red-500 font-black' : 'text-slate-500 font-medium' }}">
                                 {{ \Carbon\Carbon::parse($renewal->due_date)->format('d M, Y') }}

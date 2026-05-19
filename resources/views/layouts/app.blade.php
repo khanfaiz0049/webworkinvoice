@@ -183,7 +183,7 @@
 
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        @if (session('success') || session('error') || session('status'))
+        @if (session('success') || session('error') || session('status') || $errors->any())
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     @if (session('success'))
@@ -235,6 +235,24 @@
                                 popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
                                 title: 'text-2xl font-black uppercase tracking-tight italic text-[#d32d27]',
                                 htmlContainer: 'text-sm font-medium text-slate-500 mt-2',
+                                confirmButton: 'bg-[#d32d27] hover:bg-[#b21f24] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg active:scale-95 text-xs uppercase tracking-widest outline-none border-none focus:ring-2 focus:ring-[#d32d27]/20'
+                            }
+                        });
+                    @endif
+
+                    @if ($errors->any())
+                        Swal.fire({
+                            title: 'Validation Error',
+                            html: '{!! implode("<br>", $errors->all()) !!}',
+                            icon: 'error',
+                            confirmButtonText: 'Review',
+                            confirmButtonColor: '#d32d27',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            customClass: {
+                                popup: 'rounded-[2rem] p-6 shadow-2xl border border-slate-100 font-sans',
+                                title: 'text-2xl font-black uppercase tracking-tight italic text-[#d32d27]',
+                                htmlContainer: 'text-sm font-medium text-slate-500 mt-2 text-left',
                                 confirmButton: 'bg-[#d32d27] hover:bg-[#b21f24] text-white font-bold py-3.5 px-8 rounded-xl transition-all duration-200 shadow-lg active:scale-95 text-xs uppercase tracking-widest outline-none border-none focus:ring-2 focus:ring-[#d32d27]/20'
                             }
                         });

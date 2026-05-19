@@ -11,17 +11,17 @@ class Payment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'customer_id', 'invoice_id', 'amount', 'payment_date', 
+        'customer_id', 'invoice_id', 'received_in', 'amount', 'payment_date', 
         'payment_method', 'transaction_id', 'reference_notes', 'attachment'
     ];
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class)->withTrashed();
     }
 
     public function invoice()
     {
-        return $this->belongsTo(Invoice::class);
+        return $this->belongsTo(Invoice::class)->withTrashed();
     }
 }

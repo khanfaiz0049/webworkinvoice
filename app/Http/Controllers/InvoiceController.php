@@ -59,7 +59,8 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|string|max:255',
             'invoice_date' => 'required|date',
             'renewal_date' => 'nullable|date',
-            'renewal_text' => 'nullable|string|max:255',
+            'renewal_text' => 'nullable|array',
+            'renewal_text.*' => 'string|max:255',
             'gst_enabled' => 'required|boolean',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -133,7 +134,7 @@ class InvoiceController extends Controller
                 'invoice_number'     => $request->invoice_number,
                 'invoice_date'       => $request->invoice_date,
                 'renewal_date'       => $request->renewal_date,
-                'renewal_text'       => $request->renewal_text,
+                'renewal_text'       => $request->has('renewal_text') && is_array($request->renewal_text) ? implode(', ', $request->renewal_text) : null,
                 'status'             => 'pending',
                 'subtotal'           => $subtotal,
                 'taxable_amount'     => $subtotal,
@@ -149,6 +150,12 @@ class InvoiceController extends Controller
             foreach ($itemsData as $itemData) {
                 $itemData['invoice_id'] = $invoice->id;
                 InvoiceItem::create($itemData);
+            }
+
+            // Increment the company's starting invoice number
+            $company = Company::find($activeCompanyId);
+            if ($company) {
+                $company->increment('invoice_starting_number');
             }
 
             DB::commit();
@@ -184,7 +191,8 @@ class InvoiceController extends Controller
             'invoice_number' => ['required', 'string', 'max:255', Rule::unique('invoices', 'invoice_number')->ignore($invoice->id)],
             'invoice_date' => 'required|date',
             'renewal_date' => 'nullable|date',
-            'renewal_text' => 'nullable|string|max:255',
+            'renewal_text' => 'nullable|array',
+            'renewal_text.*' => 'string|max:255',
             'gst_enabled' => 'required|boolean',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -250,7 +258,7 @@ class InvoiceController extends Controller
                 'invoice_number'     => $request->invoice_number,
                 'invoice_date'       => $request->invoice_date,
                 'renewal_date'       => $request->renewal_date,
-                'renewal_text'       => $request->renewal_text,
+                'renewal_text'       => $request->has('renewal_text') && is_array($request->renewal_text) ? implode(', ', $request->renewal_text) : null,
                 'subtotal'           => $subtotal,
                 'taxable_amount'     => $subtotal,
                 'gst_enabled'        => $gstEnabled,

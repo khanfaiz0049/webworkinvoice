@@ -56,8 +56,8 @@
             @method('PUT')
             
             <!-- Header Section -->
-            <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100">
+                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50 rounded-t-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Edit Invoice</h3>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Modify details and recalculate totals</p>
@@ -125,7 +125,7 @@
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
-                            <input type="text" name="invoice_number" value="{{ $invoice->invoice_number }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 uppercase">
+                            <input type="text" name="invoice_number" value="{{ $invoice->invoice_number }}" readonly required class="w-full bg-slate-100 border-slate-200 rounded-2xl px-5 py-4 cursor-not-allowed focus:ring-0 transition-all font-bold text-slate-500 uppercase">
                         </div>
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Date</label>
@@ -135,9 +135,26 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Renewals</label>
                             <input type="date" name="renewal_date" value="{{ $invoice->renewal_date }}" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Renewal Terms</label>
-                            <input type="text" name="renewal_text" value="{{ $invoice->renewal_text }}" placeholder="e.g. Yearly, 10% raise" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
+                        <div class="space-y-2 relative" x-data="{ 
+                            open: false, 
+                            options: ['Domain', 'Hosting', 'AMC Yearly', 'AMC Monthly', 'SEO Monthly', 'Digital Marketing Monthly', 'GSUIT Yearly', 'ZOHO Yearly'],
+                            selected: '{{ $invoice->renewal_text }}' ? '{{ $invoice->renewal_text }}'.split(',').map(s => s.trim()) : []
+                        }">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Renewal Type of Service</label>
+                            <div class="relative">
+                                <button type="button" @click="open = !open" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-left">
+                                    <span x-text="selected.length ? selected.join(', ') : 'Select services...'" class="block truncate text-slate-500" :class="selected.length ? 'text-slate-900' : ''"></span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                                </button>
+                                <div x-show="open" x-transition @click.away="open = false" style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto p-2">
+                                    <template x-for="option in options" :key="option">
+                                        <label class="flex items-center px-4 py-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors">
+                                            <input type="checkbox" :value="option" x-model="selected" name="renewal_text[]" class="rounded border-slate-300 text-[#0055a4] focus:ring-[#0055a4] w-4 h-4 mr-3">
+                                            <span x-text="option" class="text-sm font-bold text-slate-700"></span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

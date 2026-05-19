@@ -79,8 +79,13 @@
                                     <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-black text-slate-900 uppercase italic">{{ $payment->customer->name }}</p>
-                                    <p class="text-[10px] font-bold text-slate-400">{{ $payment->invoice->company->name ?? 'N/A' }} &middot; {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M, Y') }}</p>
+                                    <p class="text-xs font-black text-slate-900 uppercase italic">{{ $payment->customer?->name ?? 'Deleted Customer' }}</p>
+                                    <p class="text-[10px] font-bold text-slate-400">
+                                        {{ $payment->invoice?->company?->name ?? 'N/A' }} &middot; {{ \Carbon\Carbon::parse($payment->payment_date)->format('d M, Y') }}
+                                        @if($payment->received_in)
+                                            &middot; In: {{ $payment->received_in }}
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                             <p class="text-xs font-black text-green-600 italic">₹{{ number_format($payment->amount, 2) }}</p>
