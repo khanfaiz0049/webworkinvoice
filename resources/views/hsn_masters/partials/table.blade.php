@@ -1,12 +1,12 @@
 @forelse($hsns as $hsn)
     <tr class="group hover:bg-blue-50/30 transition-colors">
-        <td class="px-10 py-5">
+        <td class="px-4 sm:px-6 lg:px-10 py-5">
             <div class="font-bold text-slate-900 uppercase tracking-tight italic">{{ $hsn->service_name }}</div>
         </td>
-        <td class="px-10 py-5">
+        <td class="px-4 sm:px-6 lg:px-10 py-5">
             <span class="text-xs font-black text-[#0055a4] uppercase tracking-wider">{{ $hsn->hsn_code }}</span>
         </td>
-        <td class="px-10 py-5 text-right">
+        <td class="px-4 sm:px-6 lg:px-10 py-5 text-right">
             <div class="flex items-center justify-end gap-2">
                 <!-- Edit Icon (Native SVG) -->
                 <a href="{{ route('hsn-masters.edit', $hsn) }}" class="p-2 text-slate-400 hover:text-[#0055a4] hover:bg-slate-50 rounded-xl transition-all duration-200" title="Edit HSN">
@@ -35,7 +35,7 @@
     </tr>
 @empty
     <tr>
-        <td colspan="3" class="px-10 py-20 text-center">
+        <td colspan="3" class="px-4 sm:px-6 lg:px-10 py-20 text-center">
             <div class="flex flex-col items-center gap-4">
                 <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-slate-200">

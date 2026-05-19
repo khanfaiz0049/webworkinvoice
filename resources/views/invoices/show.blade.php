@@ -189,11 +189,11 @@
 
     <div class="max-w-5xl mx-auto pb-20 px-4">
         <!-- Top Action Bar -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <a href="{{ route('invoices.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to list
             </a>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <a href="{{ route('invoices.edit', $invoice) }}" class="flex items-center gap-2 px-6 py-3 bg-amber-50 rounded-2xl text-xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-all border border-amber-100">
                     <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
                 </a>
@@ -207,8 +207,9 @@
         </div>
 
         <!-- Invoice Box (matches PDF layout exactly) -->
-        <div class="bg-white shadow-2xl overflow-hidden pdf-like-view">
-            <div class="invoice-container">
+        <div class="overflow-x-auto rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-slate-100 bg-white w-full">
+            <div class="pdf-like-view min-w-[768px]">
+                <div class="invoice-container p-8 sm:p-10">
                 <!-- Header -->
                 <div class="header">
                     <div style="text-align: center;">

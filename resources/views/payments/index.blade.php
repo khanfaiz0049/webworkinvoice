@@ -3,13 +3,13 @@
         Payments
     </x-slot>
 
-    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div class="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-            <div>
+    <div class="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden w-full">
+        <div class="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 border-b border-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50 w-full">
+            <div class="w-full sm:w-auto">
                 <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Payment History</h3>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Track all your collections and customer payments</p>
             </div>
-            <a href="{{ route('payments.create') }}" class="bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-3 px-8 rounded-xl transition-all duration-200 shadow-lg shadow-red-500/20 active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2">
+            <a href="{{ route('payments.create') }}" class="w-full sm:w-auto bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-3 px-8 rounded-xl transition-all duration-200 shadow-lg shadow-red-500/20 active:scale-95 text-xs uppercase tracking-widest flex items-center justify-center gap-2 shrink-0">
                 <i data-lucide="plus" class="w-4 h-4"></i> Record Payment
             </a>
         </div>
@@ -18,24 +18,24 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-white">
-                        <th class="px-10 py-6">Date</th>
-                        <th class="px-10 py-6">Customer</th>
-                        <th class="px-10 py-6">Invoice #</th>
-                        <th class="px-10 py-6">Method</th>
-                        <th class="px-10 py-6">Amount</th>
-                        <th class="px-10 py-6 text-right">Actions</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Date</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Customer</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Invoice #</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Method</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Amount</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse($payments as $payment)
                         <tr class="group hover:bg-blue-50/30 transition-colors">
-                            <td class="px-10 py-6 text-sm text-slate-500 font-bold uppercase tracking-tight italic">{{ \Carbon\Carbon::parse($payment->payment_date)->format('d M, Y') }}</td>
-                            <td class="px-10 py-6">
+                            <td class="px-4 sm:px-6 lg:px-10 py-6 text-sm text-slate-500 font-bold uppercase tracking-tight italic">{{ \Carbon\Carbon::parse($payment->payment_date)->format('d M, Y') }}</td>
+                            <td class="px-4 sm:px-6 lg:px-10 py-6">
                                 <div class="font-bold text-slate-900 uppercase tracking-tight italic">{{ $payment->customer?->name ?? 'Deleted Customer' }}</div>
                                 <div class="text-[10px] text-slate-400 font-black uppercase tracking-widest">{{ $payment->invoice?->company?->name ?? 'N/A' }}</div>
                             </td>
-                            <td class="px-10 py-6 text-xs font-black text-[#0055a4] uppercase tracking-widest">{{ $payment->invoice ? $payment->invoice->invoice_number : 'General' }}</td>
-                            <td class="px-10 py-6">
+                            <td class="px-4 sm:px-6 lg:px-10 py-6 text-xs font-black text-[#0055a4] uppercase tracking-widest">{{ $payment->invoice ? $payment->invoice->invoice_number : 'General' }}</td>
+                            <td class="px-4 sm:px-6 lg:px-10 py-6">
                                 <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 text-slate-600">
                                     {{ $payment->payment_method }}
                                 </span>
@@ -45,8 +45,8 @@
                                 </div>
                                 @endif
                             </td>
-                            <td class="px-10 py-6 font-black text-slate-900 italic">₹{{ number_format($payment->amount, 2) }}</td>
-                            <td class="px-10 py-6 text-right">
+                            <td class="px-4 sm:px-6 lg:px-10 py-6 font-black text-slate-900 italic">₹{{ number_format($payment->amount, 2) }}</td>
+                            <td class="px-4 sm:px-6 lg:px-10 py-6 text-right">
                                 <div class="flex items-center justify-end gap-2">
                                     <form action="{{ route('payments.destroy', $payment) }}" method="POST" class="inline payment-undo-form">
                                         @csrf
@@ -63,7 +63,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-10 py-20 text-center">
+                            <td colspan="6" class="px-4 sm:px-6 lg:px-10 py-20 text-center">
                                 <div class="flex flex-col items-center gap-4">
                                     <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
                                         <i data-lucide="credit-card" class="w-10 h-10 text-slate-200"></i>

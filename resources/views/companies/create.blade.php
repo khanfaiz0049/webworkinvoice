@@ -27,11 +27,11 @@
             
             <!-- Company Identity -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Company Identity</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Basic information and branding</p>
                 </div>
-                <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="p-4 sm:p-6 lg:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Display Name</label>
                         <input type="text" name="name" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
@@ -57,11 +57,11 @@
 
             <!-- Communication -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Communication</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Address and contact details</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email</label>
@@ -95,11 +95,11 @@
 
             <!-- Bank Details -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Bank Details</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Payment receiving information</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Account Holder Name</label>

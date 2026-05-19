@@ -17,6 +17,9 @@
     </head>
     <body class="font-sans antialiased bg-slate-50 text-slate-900">
         <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
+            <!-- Sidebar Backdrop for mobile -->
+            <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-xs lg:hidden" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
             <!-- Sidebar -->
             <aside class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 transition-transform duration-300 transform lg:translate-x-0 lg:static lg:inset-0 shadow-sm"
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
@@ -92,7 +95,7 @@
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <!-- Top Navigation -->
-                <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 flex items-center justify-between px-8">
+                <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center gap-6">
                         <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-lg hover:bg-slate-100 lg:hidden text-slate-600">
                             <i data-lucide="align-left" class="w-6 h-6"></i>
@@ -177,7 +180,7 @@
                 </header>
 
                 <!-- Page Content -->
-                <main class="flex-1 overflow-y-auto p-8">
+                <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                     {{ $slot }}
                 </main>
             </div>

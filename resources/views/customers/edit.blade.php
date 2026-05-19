@@ -10,11 +10,11 @@
             
             <!-- Basic Info -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Customer Identity</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Personal and business profile</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Name</label>
@@ -44,11 +44,11 @@
 
             <!-- Contact Section -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Contact Channels</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Email, Phone, and WhatsApp</p>
                 </div>
-                <div class="p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-4 sm:p-6 lg:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email</label>
                         <input type="email" name="email" value="{{ old('email', $customer->email) }}" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
@@ -66,11 +66,11 @@
 
             <!-- Addresses -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Address Details</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Billing and Shipping locations</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Billing Address</label>
@@ -95,11 +95,11 @@
 
             <!-- Financials -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Financials & Tags</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Balances and categorization</p>
                 </div>
-                <div class="p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-4 sm:p-6 lg:p-10 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">GST Type</label>
                         <select name="gst_type" id="gst_type" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">

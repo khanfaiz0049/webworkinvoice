@@ -28,11 +28,11 @@
             
             <!-- Company Identity -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Company Identity</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Update your basic information</p>
                 </div>
-                <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="p-4 sm:p-6 lg:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Display Name</label>
                         <input type="text" name="name" value="{{ old('name', $company->name) }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
@@ -58,11 +58,11 @@
 
             <!-- Communication -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Communication</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Address and contact details</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email</label>
@@ -96,11 +96,11 @@
 
             <!-- Bank Details -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                     <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Bank Details</h3>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Payment receiving information</p>
                 </div>
-                <div class="p-10 space-y-8">
+                <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Account Holder Name</label>
@@ -130,7 +130,7 @@
                     
                     <div class="pt-6 border-t border-slate-50">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-3">Update Company Logo Image</label>
-                        <div class="flex items-center gap-8">
+                        <div class="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
                             @if($company->logo)
                                 <div class="w-32 h-32 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
                                     <img src="{{ asset('storage/' . $company->logo) }}" class="w-full h-full object-contain">
@@ -140,7 +140,7 @@
                                     <img src="{{ asset('storage/logo.png') }}" class="w-full h-full object-contain opacity-50">
                                 </div>
                             @endif
-                            <label for="logo" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group flex-1 text-center">
+                            <label for="logo" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group w-full sm:flex-1 text-center">
                                 <input type="file" id="logo" name="logo" class="hidden" onchange="if(this.files.length) { this.nextElementSibling.querySelector('.logo-filename-text').textContent = this.files[0].name; }">
                                 <div class="flex flex-col items-center gap-2">
                                     <i data-lucide="image" class="w-8 h-8 text-slate-300 group-hover:text-[#0055a4] transition-colors"></i>
@@ -152,13 +152,13 @@
 
                     <div class="pt-6 border-t border-slate-50">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 block mb-3">Update QR / Barcode Image</label>
-                        <div class="flex items-center gap-8">
+                        <div class="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
                             @if($company->qr_code)
                                 <div class="w-32 h-32 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
                                     <img src="{{ asset('storage/' . $company->qr_code) }}" class="w-full h-full object-contain">
                                 </div>
                             @endif
-                            <label for="qr_code" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group flex-1 text-center">
+                            <label for="qr_code" class="cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:border-[#0055a4] hover:bg-blue-50/50 transition-all group w-full sm:flex-1 text-center">
                                 <input type="file" id="qr_code" name="qr_code" class="hidden" onchange="if(this.files.length) { this.nextElementSibling.querySelector('.filename-text').textContent = this.files[0].name; }">
                                 <div class="flex flex-col items-center gap-2">
                                     <i data-lucide="qr-code" class="w-8 h-8 text-slate-300 group-hover:text-[#0055a4] transition-colors"></i>

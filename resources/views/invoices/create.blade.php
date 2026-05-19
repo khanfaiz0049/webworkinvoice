@@ -90,7 +90,7 @@
             
             <!-- Header Section -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100">
-                <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50 rounded-t-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50 rounded-t-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">New GST Invoice</h3>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Professional billing with automated tax calculation</p>
@@ -150,8 +150,8 @@
                     </div>
                 </div>
 
-                <div class="p-10">
-                    <div class="mb-8 bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-[2rem] p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                <div class="p-4 sm:p-6 lg:p-10">
+                    <div class="mb-8 bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-[2rem] p-4 sm:p-6 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                         <!-- Customer Selection (Left side) -->
                         <div class="flex-grow space-y-2 relative">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer / Client</label>
@@ -276,18 +276,18 @@
 
             <!-- Items Section -->
             <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <div class="px-4 sm:px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                     <div>
                         <h3 class="font-bold text-base uppercase tracking-wider text-slate-800">Invoice Items</h3>
                         <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-0.5">List of services or products</p>
                     </div>
                 </div>
-                <div class="p-8">
+                <div class="p-4 sm:p-8">
                     <div class="space-y-10">
                         <!-- Items Template -->
                         <template x-for="(item, index) in items" :key="index">
-                            <div class="border border-slate-100 rounded-2xl p-8 bg-white hover:border-slate-200 transition-all shadow-sm">
-                                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                            <div class="border border-slate-100 rounded-2xl p-4 sm:p-8 bg-white hover:border-slate-200 transition-all shadow-sm">
+                                <div class="flex flex-col lg:flex-row gap-4 sm:gap-8 items-start">
                                     
                                     <!-- Description Area -->
                                     <div class="flex-grow w-full">
@@ -354,7 +354,7 @@
                             <i data-lucide="plus-circle" class="w-5 h-5"></i> Add Another Item
                         </button>
                         
-                        <div class="w-full md:w-80 space-y-4 bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100">
+                        <div class="w-full md:w-80 space-y-4 bg-slate-50/50 p-4 sm:p-8 rounded-[2.5rem] border border-slate-100">
                             <!-- Hidden inputs to pass GST breakdown to controller -->
                             <input type="hidden" name="gst_enabled" :value="gstDisabled ? 0 : 1">
                             <input type="hidden" name="cgst" :value="calculateCgst().toFixed(2)">

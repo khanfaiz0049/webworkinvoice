@@ -8,7 +8,7 @@
         <!-- Top Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Total Revenue -->
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-[#0055a4] group-hover:scale-110 transition-transform">
                         <i data-lucide="indian-rupee" class="w-6 h-6"></i>
@@ -20,7 +20,7 @@
             </div>
 
             <!-- Total Outstanding -->
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-[#d32d27] group-hover:scale-110 transition-transform">
                         <i data-lucide="clock" class="w-6 h-6"></i>
@@ -32,7 +32,7 @@
             </div>
 
             <!-- Overdue Invoices -->
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-orange-500/5 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
                         <i data-lucide="alert-circle" class="w-6 h-6"></i>
@@ -44,7 +44,7 @@
             </div>
 
             <!-- Renewals Due -->
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 group hover:shadow-xl hover:shadow-purple-500/5 transition-all duration-300">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
                         <i data-lucide="refresh-cw" class="w-6 h-6"></i>
@@ -58,7 +58,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Revenue Graph -->
-            <div class="lg:col-span-2 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+            <div class="lg:col-span-2 bg-white p-6 sm:p-10 rounded-2xl sm:rounded-[3rem] shadow-sm border border-slate-100">
                 <div class="flex items-center justify-between mb-8">
                     <div>
                         <h3 class="text-xl font-black text-slate-900 italic uppercase tracking-tighter">Revenue Growth</h3>
@@ -69,7 +69,7 @@
             </div>
 
             <!-- Recent Payments -->
-            <div class="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
+            <div class="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-[3rem] shadow-sm border border-slate-100">
                 <h3 class="text-xl font-black text-slate-900 italic uppercase tracking-tighter mb-6">Recent Payments</h3>
                 <div class="space-y-6">
                     @forelse($recentPayments as $payment)

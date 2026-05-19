@@ -6,12 +6,12 @@
     <div class="max-w-4xl mx-auto">
         <form action="{{ route('payments.store') }}" method="POST" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             @csrf
-            <div class="px-10 py-8 border-b border-slate-50 bg-slate-50/50">
+            <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50">
                 <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">Record Payment</h3>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Log a collection from your customer</p>
             </div>
 
-            <div class="p-10 space-y-8">
+            <div class="p-4 sm:p-6 lg:p-10 space-y-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Customer</label>
@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div class="px-10 py-8 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
+            <div class="px-4 sm:px-6 lg:px-10 py-8 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
                 <a href="{{ route('payments.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">Cancel</a>
                 <button type="submit" class="bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-4 px-12 rounded-2xl transition-all duration-200 shadow-xl shadow-red-500/20 active:scale-95 text-xs uppercase tracking-widest">
                     Record Payment

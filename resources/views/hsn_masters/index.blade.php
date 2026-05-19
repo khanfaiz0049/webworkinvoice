@@ -3,9 +3,9 @@
         HSN Master
     </x-slot>
 
-    <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-        <div class="px-10 py-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
-            <div>
+    <div class="bg-white rounded-2xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden w-full">
+        <div class="px-4 sm:px-6 lg:px-10 py-6 sm:py-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50 w-full">
+            <div class="w-full md:w-auto">
                 <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">HSN Master Directory</h3>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Manage service names and HSN / SAC codes</p>
             </div>
@@ -28,7 +28,7 @@
                 </form>
             </div>
 
-            <a href="{{ route('hsn-masters.create') }}" class="bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-3.5 px-8 rounded-2xl transition-all duration-200 shadow-lg shadow-red-500/20 active:scale-95 text-xs uppercase tracking-widest flex items-center gap-2 shrink-0">
+            <a href="{{ route('hsn-masters.create') }}" class="w-full md:w-auto bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-3.5 px-8 rounded-2xl transition-all duration-200 shadow-lg shadow-red-500/20 active:scale-95 text-xs uppercase tracking-widest flex items-center justify-center gap-2 shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -41,9 +41,9 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-white border-b border-slate-100">
-                        <th class="px-10 py-6">Service Name</th>
-                        <th class="px-10 py-6">HSN / SAC Code</th>
-                        <th class="px-10 py-6 text-right">Actions</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">Service Name</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6">HSN / SAC Code</th>
+                        <th class="px-4 sm:px-6 lg:px-10 py-6 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="hsn-table-body" class="divide-y divide-slate-50">

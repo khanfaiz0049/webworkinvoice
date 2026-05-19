@@ -1,6 +1,6 @@
 @forelse($customers as $customer)
     <tr class="group hover:bg-blue-50/30 transition-colors">
-        <td class="px-10 py-5">
+        <td class="px-4 sm:px-6 lg:px-10 py-5">
             <div class="flex items-center gap-2">
                 <span class="font-bold text-slate-900 uppercase tracking-tight italic">{{ $customer->name }}</span>
                 @if($customer->reference_name)
@@ -11,16 +11,16 @@
                 <div class="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1">{{ $customer->company_name }}</div>
             @endif
         </td>
-        <td class="px-10 py-5">
+        <td class="px-4 sm:px-6 lg:px-10 py-5">
             <span class="text-xs font-black text-[#0055a4] uppercase tracking-wider">{{ $customer->gst_number ?? 'N/A' }}</span>
         </td>
-        <td class="px-10 py-5">
+        <td class="px-4 sm:px-6 lg:px-10 py-5">
             <div class="text-xs text-slate-600 font-bold">{{ $customer->email ?? 'N/A' }}</div>
             @if($customer->phone)
                 <div class="text-[10px] text-slate-400 font-bold mt-1">{{ $customer->phone }}</div>
             @endif
         </td>
-        <td class="px-10 py-5 text-right">
+        <td class="px-4 sm:px-6 lg:px-10 py-5 text-right">
             <div class="flex items-center justify-end gap-2">
                 <!-- Edit Icon (Native SVG) -->
                 <a href="{{ route('customers.edit', $customer) }}" class="p-2 text-slate-400 hover:text-[#0055a4] hover:bg-slate-50 rounded-xl transition-all duration-200" title="Edit Customer">
@@ -49,7 +49,7 @@
     </tr>
 @empty
     <tr>
-        <td colspan="4" class="px-10 py-20 text-center">
+        <td colspan="4" class="px-4 sm:px-6 lg:px-10 py-20 text-center">
             <div class="flex flex-col items-center gap-4">
                 <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-10 h-10 text-slate-200">
