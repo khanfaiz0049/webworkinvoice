@@ -127,6 +127,17 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // ── Dedicated backup channel ──────────────────────────────────────
+        // All backup/restore events are written to storage/logs/backup.log
+        // with daily rotation, keeping 30 days of history.
+        'backup' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/backup.log'),
+            'level'  => 'debug',
+            'days'   => 30,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

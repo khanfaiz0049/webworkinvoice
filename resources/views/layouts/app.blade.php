@@ -10,7 +10,10 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <noscript>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        </noscript>
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -49,6 +52,10 @@
                             <i data-lucide="users" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">Customers</span>
                         </a>
+                        <a href="{{ route('projects.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('projects.*') ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0055a4]' }}">
+                            <i data-lucide="briefcase" class="w-5 h-5"></i>
+                            <span class="uppercase tracking-widest text-xs font-black">Projects</span>
+                        </a>
                         <a href="{{ route('hsn-masters.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('hsn-masters.*') ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0055a4]' }}">
                             <i data-lucide="hash" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">HSN Master</span>
@@ -73,6 +80,10 @@
                             <i data-lucide="wallet" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">Expenses</span>
                         </a>
+                        <a href="{{ route('services.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('services.*') ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-50 hover:text-[#0055a4]' }}">
+                            <i data-lucide="layers" class="w-5 h-5"></i>
+                            <span class="uppercase tracking-widest text-xs font-black">Services</span>
+                        </a>
 
                         <div class="pt-8 pb-3 px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Reports</div>
                         
@@ -88,7 +99,7 @@
 
                     <!-- Sidebar Footer -->
                     <div class="p-6 border-t border-slate-100">
-                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-600 hover:bg-slate-100">
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ (request()->routeIs('profile.edit') || request()->routeIs('backup.*')) ? 'bg-blue-50 text-[#0055a4] font-bold shadow-sm border-l-4 border-[#0055a4]' : 'text-slate-600 hover:bg-slate-100 hover:text-[#0055a4]' }}">
                             <i data-lucide="settings-2" class="w-5 h-5"></i>
                             <span class="uppercase tracking-widest text-xs font-black">Settings</span>
                         </a>
@@ -170,7 +181,7 @@
                                 </div>
                                 <div class="border-t border-slate-50 my-2"></div>
                                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-6 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-[#0055a4] transition-colors">
-                                    <i data-lucide="user" class="w-4 h-4"></i> Profile
+                                    <i data-lucide="settings-2" class="w-4 h-4"></i> Settings
                                 </a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf

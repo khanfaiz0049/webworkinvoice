@@ -42,4 +42,9 @@ class Company extends Model
     {
         return $this->hasMany(Expense::class);
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
 }

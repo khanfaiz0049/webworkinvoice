@@ -30,4 +30,9 @@ class Customer extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
 }

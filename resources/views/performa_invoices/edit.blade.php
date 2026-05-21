@@ -113,13 +113,13 @@
             return this.calculateSubtotal() * 0.18;
         },
         calculateCgst() {
-            return this.isInterState ? this.calculateTotalGst() / 2 : 0;
+            return this.isIntraState ? this.calculateTotalGst() / 2 : 0;
         },
         calculateSgst() {
-            return this.isInterState ? this.calculateTotalGst() / 2 : 0;
+            return this.isIntraState ? this.calculateTotalGst() / 2 : 0;
         },
         calculateIgst() {
-            return this.isIntraState ? this.calculateTotalGst() : 0;
+            return this.isInterState ? this.calculateTotalGst() : 0;
         },
         calculateGrandTotal() {
             return this.calculateSubtotal() + this.calculateTotalGst();
@@ -212,6 +212,17 @@
                                     x-text="gstType === 'intra_state' ? 'Intra State - IGST applies' : 'Inter State - CGST + SGST applies'"
                                 ></span>
                             </div>
+                        </div>
+
+                        <!-- Add Customer Button (In Between) -->
+                        <div class="flex-shrink-0 flex flex-col items-center lg:items-end justify-center space-y-2 lg:border-l lg:border-slate-200 lg:pl-8 pt-4 lg:pt-0">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">New Customer</label>
+                            <a href="{{ route('customers.create') }}" 
+                                class="flex items-center justify-center gap-2 h-12 px-6 rounded-2xl border border-dashed border-slate-300 hover:border-[#0055a4] text-slate-600 hover:text-[#0055a4] hover:bg-blue-50/50 hover:shadow-sm transition-all font-black text-xs uppercase tracking-widest active:scale-95">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                <span>Add New</span>
+                            </a>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-[0.24em] mt-1 block">QUICK ADD</span>
                         </div>
 
                         <!-- GST Preference Switcher (Right side) -->
@@ -353,14 +364,14 @@
                                 GST disabled for this performa invoice
                             </div>
 
-                            <!-- Intra State: IGST -->
-                            <div x-show="!gstDisabled && isIntraState" class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            <!-- Inter State: IGST -->
+                            <div x-show="!gstDisabled && isInterState" class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                                 <span>IGST (18%)</span>
                                 <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateIgst().toFixed(2)"></span>
                             </div>
 
-                            <!-- Inter State: CGST + SGST -->
-                            <div x-show="!gstDisabled && isInterState" class="space-y-3">
+                            <!-- Intra State: CGST + SGST -->
+                            <div x-show="!gstDisabled && isIntraState" class="space-y-3">
                                 <div class="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                                     <span>CGST (9%)</span>
                                     <span class="text-slate-900 font-black" x-text="'Rs. ' + calculateCgst().toFixed(2)"></span>

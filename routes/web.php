@@ -10,6 +10,9 @@ use App\Http\Controllers\RenewalController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HsnMasterController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,8 +38,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('renewals', RenewalController::class)->except(['show']);
+    Route::resource('projects', ProjectController::class)->except(['show']);
     Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::resource('services', ServiceController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::patch('services/{service}/toggle', [ServiceController::class, 'toggleActive'])->name('services.toggle');
+    Route::post('services/{id}/restore', [ServiceController::class, 'restore'])->name('services.restore');
     
+    // ── Backup & Restore ─────────────────────────────────────────────────────
+    Route::prefix('backup')->name('backup.')->group(function () {
+        Route::get('/',                         [BackupController::class, 'index'])->name('index');
+        Route::post('/download',                [BackupController::class, 'download'])->name('download');
+        Route::post('/store',                   [BackupController::class, 'store'])->name('store');
+        Route::post('/restore',                 [BackupController::class, 'restore'])->name('restore');
+        Route::get('/health',                   [BackupController::class, 'health'])->name('health');
+        Route::get('/files/{filename}',         [BackupController::class, 'downloadFile'])->name('files.download');
+        Route::delete('/files/{filename}',      [BackupController::class, 'destroyFile'])->name('files.destroy');
+    });
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

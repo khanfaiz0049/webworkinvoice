@@ -21,7 +21,7 @@ class RenewalController extends Controller
     public function create()
     {
         $customers = Customer::all();
-        $activeCompanyId = session('active_company_id');
+        $activeCompanyId = $this->resolveActiveCompanyId();
         return view('renewals.create', compact('customers', 'activeCompanyId'));
     }
 
@@ -35,11 +35,18 @@ class RenewalController extends Controller
             'status' => 'required|string',
         ]);
 
-        $validated['company_id'] = session('active_company_id');
+        $validated['company_id'] = $this->resolveActiveCompanyId();
 
         Renewal::create($validated);
 
         return redirect()->route('renewals.index')->with('success', 'Renewal scheduled successfully.');
+    }
+
+    private function resolveActiveCompanyId(): int
+    {
+        return session('active_company_id') 
+            ?: optional(auth()->user())->active_company_id 
+            ?: optional(Company::first())->id;
     }
 
     public function edit(Renewal $renewal)

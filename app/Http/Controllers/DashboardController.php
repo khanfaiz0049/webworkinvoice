@@ -28,11 +28,19 @@ class DashboardController extends Controller
             ->get();
 
         // Monthly Revenue Graph Data (all companies)
-        $monthlyRevenue = Invoice::select(DB::raw('SUM(paid_amount) as total'), DB::raw("DATE_FORMAT(invoice_date, '%b') as month"))
-            ->groupBy('month')
-            ->orderBy('invoice_date')
-            ->pluck('total', 'month')
-            ->toArray();
+        $monthlyRevenueRaw = Invoice::select(
+                DB::raw('SUM(paid_amount) as total'), 
+                DB::raw("DATE_FORMAT(invoice_date, '%Y-%m') as invoice_year_month"),
+                DB::raw("DATE_FORMAT(invoice_date, '%b') as month_name")
+            )
+            ->groupBy(DB::raw("DATE_FORMAT(invoice_date, '%Y-%m')"), DB::raw("DATE_FORMAT(invoice_date, '%b')"))
+            ->orderBy('invoice_year_month')
+            ->get();
+
+        $monthlyRevenue = [];
+        foreach ($monthlyRevenueRaw as $row) {
+            $monthlyRevenue[$row->month_name] = (float) $row->total;
+        }
 
         // Total companies count for the subtitle
         $totalCompanies = Company::count();

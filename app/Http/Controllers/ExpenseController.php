@@ -33,11 +33,18 @@ class ExpenseController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $validated['company_id'] = session('active_company_id');
+        $validated['company_id'] = $this->resolveActiveCompanyId();
 
         Expense::create($validated);
 
         return redirect()->route('expenses.index')->with('success', 'Expense recorded successfully.');
+    }
+
+    private function resolveActiveCompanyId(): int
+    {
+        return session('active_company_id') 
+            ?: optional(auth()->user())->active_company_id 
+            ?: optional(Company::first())->id;
     }
 
     public function destroy(Expense $expense)

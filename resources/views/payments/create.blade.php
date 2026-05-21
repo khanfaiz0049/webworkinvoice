@@ -4,7 +4,12 @@
     </x-slot>
 
     <div class="max-w-4xl mx-auto" x-data="{
-        selectedCustomerId: ''
+        selectedCustomerId: '',
+        invoices: {{ $invoices->map(fn($i) => ['id' => $i->id, 'customer_id' => $i->customer_id, 'invoice_number' => $i->invoice_number, 'outstanding_amount' => (float)$i->outstanding_amount])->toJson() }},
+        get filteredInvoices() {
+            if (!this.selectedCustomerId) return [];
+            return this.invoices.filter(i => i.customer_id == this.selectedCustomerId);
+        }
     }">
         <form action="{{ route('payments.store') }}" method="POST" class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             @csrf
@@ -28,9 +33,9 @@
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Link to Invoice (Optional)</label>
                         <select name="invoice_id" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                             <option value="">General Payment</option>
-                            @foreach($invoices as $invoice)
-                                <option value="{{ $invoice->id }}">{{ $invoice->invoice_number }} (Bal: ₹{{ number_format($invoice->outstanding_amount, 2) }})</option>
-                            @endforeach
+                            <template x-for="invoice in filteredInvoices" :key="invoice.id">
+                                <option :value="invoice.id" x-text="invoice.invoice_number + ' (Bal: ₹' + invoice.outstanding_amount.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ')'"></option>
+                            </template>
                         </select>
                     </div>
                 </div>

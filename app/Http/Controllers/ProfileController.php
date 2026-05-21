@@ -9,15 +9,22 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+use App\Services\BackupService;
+
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request, BackupService $backupService): View
     {
+        $health  = $backupService->healthCheck();
+        $backups = $backupService->listBackupFiles();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'health' => $health,
+            'backups' => $backups,
         ]);
     }
 

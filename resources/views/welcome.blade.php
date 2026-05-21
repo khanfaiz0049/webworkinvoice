@@ -6,10 +6,13 @@
         <title>WebWork Invoice - Multi-Company Billing Solution</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <noscript>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        </noscript>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <style>
-            body { font-family: 'Roboto', sans-serif; }
+            body { font-family: 'Inter', sans-serif; }
             .bg-grid {
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M10 0 L10 100 M0 10 L100 10' stroke='%23e2e8f0' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
             }
@@ -91,8 +94,12 @@
                 </div>
                 <p class="text-sm text-slate-400 font-bold uppercase tracking-widest">&copy; {{ date('Y') }} WebWork Invoice. All rights reserved.</p>
                 <div class="flex gap-8">
-                    <a href="#" class="text-slate-400 hover:text-[#0055a4] transition-colors"><i data-lucide="twitter" class="w-6 h-6"></i></a>
-                    <a href="#" class="text-slate-400 hover:text-[#d32d27] transition-colors"><i data-lucide="github" class="w-6 h-6"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-[#0055a4] transition-colors" aria-label="Twitter">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-[#d32d27] transition-colors" aria-label="GitHub">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+                    </a>
                 </div>
             </div>
         </footer>

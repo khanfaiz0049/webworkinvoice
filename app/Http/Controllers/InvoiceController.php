@@ -159,7 +159,7 @@ class InvoiceController extends Controller
                 $itemTotal    = $itemSubtotal + $itemGst;
 
                 $cgst = $sgst = $igst = 0;
-                if ($gstType === 'intra_state') {
+                if ($gstType === 'inter_state') {
                     $igst = $itemGst;
                 } else {
                     $cgst = round($itemGst / 2, 2);
@@ -340,7 +340,7 @@ class InvoiceController extends Controller
                 $itemTotal    = $itemSubtotal + $itemGst;
 
                 $cgst = $sgst = $igst = 0;
-                if ($gstType === 'intra_state') {
+                if ($gstType === 'inter_state') {
                     $igst = $itemGst;
                 } else {
                     $cgst = round($itemGst / 2, 2);
@@ -440,10 +440,18 @@ class InvoiceController extends Controller
     {
         $candidate = max(1, (int) $company->invoice_starting_number);
 
-        while (Invoice::withTrashed()
+        // Fetch all numeric invoice numbers for this company in a single query
+        $existingNumbers = Invoice::withTrashed()
             ->where('company_id', $company->id)
-            ->where('invoice_number', (string) $candidate)
-            ->exists()) {
+            ->pluck('invoice_number')
+            ->filter(fn($num) => is_numeric($num))
+            ->map(fn($num) => (int)$num)
+            ->toArray();
+
+        // Convert to a hash lookup map for O(1) checks
+        $existingMap = array_flip($existingNumbers);
+
+        while (isset($existingMap[$candidate])) {
             $candidate++;
         }
 

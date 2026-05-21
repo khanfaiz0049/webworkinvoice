@@ -46,8 +46,18 @@ class PaymentController extends Controller
     public function create()
     {
         $customers = Customer::all();
-        $invoices = Invoice::where('status', '!=', 'paid')->get();
+        $activeCompanyId = $this->resolveActiveCompanyId();
+        $invoices = Invoice::where('company_id', $activeCompanyId)
+            ->where('status', '!=', 'paid')
+            ->get();
         return view('payments.create', compact('customers', 'invoices'));
+    }
+
+    private function resolveActiveCompanyId(): int
+    {
+        return session('active_company_id') 
+            ?: optional(auth()->user())->active_company_id 
+            ?: optional(\App\Models\Company::first())->id;
     }
 
     public function store(Request $request)
