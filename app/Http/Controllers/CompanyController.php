@@ -41,6 +41,7 @@ class CompanyController extends Controller
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
             'invoice_starting_number' => 'required|integer|min:0',
+            'performa_invoice_starting_number' => 'required|integer|min:0',
         ]);
 
         if ($request->hasFile('qr_code')) {
@@ -89,6 +90,7 @@ class CompanyController extends Controller
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:5120',
             'invoice_starting_number' => 'required|integer|min:0',
+            'performa_invoice_starting_number' => 'required|integer|min:0',
         ]);
 
         if ($request->hasFile('qr_code')) {

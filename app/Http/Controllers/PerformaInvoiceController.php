@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PerformaInvoice;
+use App\Models\PerformaInvoiceItem;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Customer;
@@ -12,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Validation\Rule;
 
-class InvoiceController extends Controller
+class PerformaInvoiceController extends Controller
 {
     private const DEFAULT_HSN_SAC = '9983';
 
@@ -20,7 +22,7 @@ class InvoiceController extends Controller
     {
         $perPage = $request->query('per_page', 10);
         
-        $query = Invoice::with(['customer', 'company'])
+        $query = PerformaInvoice::with(['customer', 'company'])
             ->latest();
 
         if ($request->filled('search')) {
@@ -45,24 +47,30 @@ class InvoiceController extends Controller
             $invoices = $query->paginate($perPage)->withQueryString();
         }
 
+        // Compute next invoice number for the active company
+        $activeCompany = $this->resolveActiveCompany();
+        $nextInvoiceNumber = $activeCompany ? $this->resolveNextInvNumber($activeCompany) : null;
+
         if ($request->ajax()) {
-            return view('invoices.partials.table', compact('invoices'))->render();
+            return view('performa_invoices.partials.table', compact('invoices', 'nextInvoiceNumber'))->render();
         }
 
-        return view('invoices.index', compact('invoices', 'perPage'));
+        return view('performa_invoices.index', compact('invoices', 'perPage', 'nextInvoiceNumber'));
     }
 
-    public function show(Invoice $invoice)
+    public function show(PerformaInvoice $performaInvoice)
     {
+        $invoice = $performaInvoice;
         $invoice->load(['customer', 'company', 'items']);
-        return view('invoices.show', compact('invoice'));
+        return view('performa_invoices.show', compact('invoice'));
     }
 
-    public function download(Invoice $invoice)
+    public function download(PerformaInvoice $performaInvoice)
     {
+        $invoice = $performaInvoice;
         $invoice->load(['customer', 'company', 'items']);
-        $pdf = Pdf::loadView('invoices.pdf', compact('invoice'));
-        $safeFilename = 'invoice-' . str_replace(['/', '\\'], '-', $invoice->invoice_number) . '.pdf';
+        $pdf = Pdf::loadView('performa_invoices.pdf', compact('invoice'));
+        $safeFilename = 'performa-invoice-' . str_replace(['/', '\\'], '-', $invoice->invoice_number) . '.pdf';
         return $pdf->download($safeFilename);
     }
 
@@ -96,7 +104,7 @@ class InvoiceController extends Controller
         $activeCompany = $this->resolveActiveCompany();
         $nextInvoiceNumber = $activeCompany ? $this->resolveNextInvoiceNumber($activeCompany) : '';
 
-        return view('invoices.create', compact('customers', 'companies', 'activeCompany', 'hsnMasters', 'hsnOptions', 'nextInvoiceNumber'));
+        return view('performa_invoices.create', compact('customers', 'companies', 'activeCompany', 'hsnMasters', 'hsnOptions', 'nextInvoiceNumber'));
     }
 
     public function store(Request $request)
@@ -105,7 +113,7 @@ class InvoiceController extends Controller
         $activeCompanyId = optional($activeCompany)->id;
 
         if (! $activeCompanyId) {
-            return back()->withInput()->with('error', 'Please select a billing company before creating an invoice.');
+            return back()->withInput()->with('error', 'Please select a billing company before creating a proforma invoice.');
         }
 
         $nextInvoiceNumber = $this->resolveNextInvoiceNumber($activeCompany);
@@ -119,7 +127,7 @@ class InvoiceController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('invoices', 'invoice_number')->where('company_id', $activeCompanyId),
+                Rule::unique('performa_invoices', 'invoice_number')->where('company_id', $activeCompanyId),
             ],
             'invoice_date' => 'required|date',
             'renewal_date' => 'nullable|date',
@@ -187,7 +195,7 @@ class InvoiceController extends Controller
                 $totalIgst += $igst;
             }
 
-            $invoice = Invoice::create([
+            $invoice = PerformaInvoice::create([
                 'company_id'         => $activeCompanyId,
                 'customer_id'        => $request->customer_id,
                 'invoice_number'     => $request->invoice_number,
@@ -207,27 +215,29 @@ class InvoiceController extends Controller
             ]);
 
             foreach ($itemsData as $itemData) {
-                $itemData['invoice_id'] = $invoice->id;
-                InvoiceItem::create($itemData);
+                $itemData['performa_invoice_id'] = $invoice->id;
+                PerformaInvoiceItem::create($itemData);
             }
 
-            // Increment the company's starting invoice number
+            // Increment the company's starting performa invoice number
             $company = Company::find($activeCompanyId);
             if ($company) {
                 $company->update([
-                    'invoice_starting_number' => ((int) $nextInvoiceNumber) + 1,
+                    'performa_invoice_starting_number' => ((int) $nextInvoiceNumber) + 1,
                 ]);
             }
 
             DB::commit();
-            return redirect()->route('invoices.index')->with('success', 'Invoice generated successfully.');
+            return redirect()->route('performa-invoices.index')->with('success', 'Performa Invoice generated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error generating invoice: ' . $e->getMessage());
+            return back()->with('error', 'Error generating proforma invoice: ' . $e->getMessage());
         }
     }
-    public function edit(Invoice $invoice)
+
+    public function edit(PerformaInvoice $performaInvoice)
     {
+        $invoice = $performaInvoice;
         $invoice->load(['items', 'customer']);
         $customers = Customer::all();
         $hsnMasters = HsnMaster::orderBy('service_name')->get();
@@ -288,18 +298,19 @@ class InvoiceController extends Controller
             ];
         });
 
-        return view('invoices.edit', compact('invoice', 'customers', 'activeCompany', 'items', 'hsnMasters', 'hsnOptions'));
+        return view('performa_invoices.edit', compact('invoice', 'customers', 'activeCompany', 'items', 'hsnMasters', 'hsnOptions'));
     }
 
-    public function update(Request $request, Invoice $invoice)
+    public function update(Request $request, PerformaInvoice $performaInvoice)
     {
+        $invoice = $performaInvoice;
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'invoice_number' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('invoices', 'invoice_number')
+                Rule::unique('performa_invoices', 'invoice_number')
                     ->where('company_id', $invoice->company_id)
                     ->ignore($invoice->id),
             ],
@@ -385,22 +396,20 @@ class InvoiceController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('invoices.index')->with('success', 'Invoice updated successfully.');
+            return redirect()->route('performa-invoices.index')->with('success', 'Performa Invoice updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error updating invoice: ' . $e->getMessage());
+            return back()->with('error', 'Error updating proforma invoice: ' . $e->getMessage());
         }
     }
 
-    public function destroy(Invoice $invoice)
+    public function destroy(PerformaInvoice $performaInvoice)
     {
+        $invoice = $performaInvoice;
         try {
             DB::beginTransaction();
 
             $company = $invoice->company()->withTrashed()->lockForUpdate()->first();
-
-            // Permanently remove dependent payments so the invoice number can be reused.
-            $invoice->payments()->forceDelete();
 
             // Store the invoice number before permanently deleting the invoice itself.
             $deletedNumber = $invoice->invoice_number;
@@ -410,18 +419,93 @@ class InvoiceController extends Controller
 
             if ($company && is_numeric($deletedNumber)) {
                 $deletedNumVal = (int) $deletedNumber;
-                if ($deletedNumVal < $company->invoice_starting_number) {
+                if ($deletedNumVal < $company->performa_invoice_starting_number) {
                     $company->update([
-                        'invoice_starting_number' => $deletedNumVal,
+                        'performa_invoice_starting_number' => $deletedNumVal,
                     ]);
                 }
             }
 
             DB::commit();
-            return redirect()->route('invoices.index')->with('success', 'Invoice undone and deleted successfully.');
+            return redirect()->route('performa-invoices.index')->with('success', 'Performa Invoice undone and deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error undoing invoice: ' . $e->getMessage());
+            return back()->with('error', 'Error undoing proforma invoice: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Convert a Proforma Invoice into a real Invoice.
+     */
+    public function convertToInvoice(PerformaInvoice $performaInvoice)
+    {
+        $proforma = $performaInvoice;
+        $proforma->load(['items', 'customer', 'company']);
+
+        $company = $proforma->company;
+        if (! $company) {
+            return back()->with('error', 'Company not found for this proforma invoice.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Get next invoice number for the INVOICE series (not proforma)
+            $nextInvNumber = $this->resolveNextInvNumber($company);
+
+            // Create the Invoice
+            $invoice = Invoice::create([
+                'company_id'         => $company->id,
+                'customer_id'        => $proforma->customer_id,
+                'invoice_number'     => $nextInvNumber,
+                'invoice_date'       => $proforma->invoice_date,
+                'renewal_date'       => $proforma->renewal_date,
+                'renewal_text'       => $proforma->renewal_text,
+                'status'             => 'pending',
+                'subtotal'           => $proforma->subtotal,
+                'taxable_amount'     => $proforma->taxable_amount,
+                'gst_enabled'        => $proforma->gst_enabled,
+                'cgst'               => $proforma->cgst,
+                'sgst'               => $proforma->sgst,
+                'igst'               => $proforma->igst,
+                'total_gst'          => $proforma->total_gst,
+                'grand_total'        => $proforma->grand_total,
+                'outstanding_amount' => $proforma->grand_total,
+                'paid_amount'        => 0,
+            ]);
+
+            // Copy items
+            foreach ($proforma->items as $item) {
+                InvoiceItem::create([
+                    'invoice_id'     => $invoice->id,
+                    'name'           => $item->name,
+                    'description'    => $item->description,
+                    'hsn_sac'        => $item->hsn_sac,
+                    'quantity'       => $item->quantity,
+                    'rate'           => $item->rate,
+                    'discount'       => $item->discount ?? 0,
+                    'gst_percentage' => $item->gst_percentage,
+                    'cgst'           => $item->cgst,
+                    'sgst'           => $item->sgst,
+                    'igst'           => $item->igst,
+                    'total'          => $item->total,
+                ]);
+            }
+
+            // Advance the company invoice counter
+            $company->update([
+                'invoice_starting_number' => ((int) $nextInvNumber) + 1,
+            ]);
+
+            // Mark proforma as converted
+            $proforma->update(['status' => 'converted']);
+
+            DB::commit();
+            return redirect()->route('invoices.show', $invoice)
+                ->with('success', "Proforma #{$proforma->invoice_number} converted to Invoice #{$nextInvNumber} successfully.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Error converting proforma to invoice: ' . $e->getMessage());
         }
     }
 
@@ -437,6 +521,23 @@ class InvoiceController extends Controller
     }
 
     private function resolveNextInvoiceNumber(Company $company): string
+    {
+        $candidate = max(1, (int) $company->performa_invoice_starting_number);
+
+        while (PerformaInvoice::withTrashed()
+            ->where('company_id', $company->id)
+            ->where('invoice_number', (string) $candidate)
+            ->exists()) {
+            $candidate++;
+        }
+
+        return (string) $candidate;
+    }
+
+    /**
+     * Resolve the next available INVOICE (not proforma) number for a company.
+     */
+    private function resolveNextInvNumber(Company $company): string
     {
         $candidate = max(1, (int) $company->invoice_starting_number);
 

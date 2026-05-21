@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Create Invoice
+        Create Proforma Invoice
     </x-slot>
 
     <!-- Include Quill CSS/JS -->
@@ -22,12 +22,33 @@
         searchOpen: false,
         searchLoading: false,
         searchResults: [],
+        historyLoading: false,
+        historyData: { invoices: [], performa_invoices: [], payments: [] },
+        activeHistoryTab: "invoices",
+        async fetchCustomerHistory() {
+            if (!this.selectedCustomerId) {
+                this.historyData = { invoices: [], performa_invoices: [], payments: [] };
+                return;
+            }
+            this.historyLoading = true;
+            try {
+                const response = await fetch(`/api/customers/${this.selectedCustomerId}/history`);
+                if (response.ok) {
+                    this.historyData = await response.json();
+                }
+            } catch (error) {
+                console.error("Error fetching customer history:", error);
+            } finally {
+                this.historyLoading = false;
+            }
+        },
         init() {
             this.$watch("selectedCustomerId", (id) => {
                 const customer = this.customers.find(c => String(c.id) === String(id));
                 this.gstType    = customer ? customer.gst_type : "intra_state";
                 this.isIntraState = this.gstType === "intra_state";
                 this.isInterState = this.gstType === "inter_state";
+                this.fetchCustomerHistory();
             });
             this.searchResults = this.customers.slice(0, 10);
         },
@@ -103,15 +124,15 @@
             return this.calculateSubtotal() + this.calculateTotalGst();
         }
     }'>
-        <form action="{{ route('invoices.store') }}" method="POST" class="space-y-8">
+        <form action="{{ route('performa-invoices.store') }}" method="POST" class="space-y-8">
             @csrf
             
             <!-- Header Section -->
             <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100">
                 <div class="px-4 sm:px-6 lg:px-10 py-8 border-b border-slate-50 bg-slate-50/50 rounded-t-[2.5rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">New GST Invoice</h3>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Professional billing with automated tax calculation</p>
+                        <h3 class="font-black text-2xl uppercase tracking-tighter italic text-slate-900">New Proforma Invoice</h3>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Professional proforma billing with automated tax calculation</p>
                     </div>
                     
                     <!-- Company Switcher inside Card -->
@@ -254,14 +275,15 @@
                         </div>
                     </div>
 
+                    
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Proforma Invoice Number</label>
                             <input type="text" name="invoice_number" value="{{ $nextInvoiceNumber }}" readonly required class="w-full bg-slate-100 border-slate-200 rounded-2xl px-5 py-4 cursor-not-allowed focus:ring-0 transition-all font-bold text-slate-500">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Date</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Proforma Invoice Date</label>
                             <input type="date" name="invoice_date" value="{{ date('Y-m-d') }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
                     </div>
@@ -272,7 +294,7 @@
             <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 overflow-hidden">
                 <div class="px-4 sm:px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-base uppercase tracking-wider text-slate-800">Invoice Items</h3>
+                        <h3 class="font-bold text-base uppercase tracking-wider text-slate-800">Proforma Invoice Items</h3>
                         <p class="text-[10px] font-medium text-slate-500 uppercase tracking-widest mt-0.5">List of services or products</p>
                     </div>
                 </div>
@@ -368,7 +390,7 @@
                             </div>
 
                             <div x-show="gstDisabled" class="print:hidden rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-amber-700">
-                                GST disabled for this invoice
+                                GST disabled for this performa invoice
                             </div>
 
                             <!-- Intra State: IGST -->
@@ -399,9 +421,9 @@
             </div>
 
             <div class="flex items-center justify-between pb-20">
-                <a href="{{ route('invoices.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">Discard</a>
+                <a href="{{ route('performa-invoices.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors">Discard</a>
                 <button type="submit" class="bg-[#d32d27] hover:bg-[#b21f24] text-white font-black py-5 px-16 rounded-[2.5rem] transition-all duration-200 shadow-2xl shadow-red-500/40 active:scale-95 text-sm uppercase tracking-widest">
-                    Generate GST Invoice
+                    Generate Proforma Invoice
                 </button>
             </div>
         </form>

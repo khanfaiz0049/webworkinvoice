@@ -126,4 +126,28 @@ class CustomerController extends Controller
         $customers = $query->limit(20)->get(['id', 'name', 'company_name', 'state', 'gst_type']);
         return response()->json($customers);
     }
+
+    public function history($id)
+    {
+        $invoices = \App\Models\Invoice::where('customer_id', $id)
+            ->with(['company'])
+            ->latest('invoice_date')
+            ->get();
+
+        $performaInvoices = \App\Models\PerformaInvoice::where('customer_id', $id)
+            ->with(['company'])
+            ->latest('invoice_date')
+            ->get();
+
+        $payments = \App\Models\Payment::where('customer_id', $id)
+            ->with(['invoice'])
+            ->latest('payment_date')
+            ->get();
+
+        return response()->json([
+            'invoices' => $invoices,
+            'performa_invoices' => $performaInvoices,
+            'payments' => $payments
+        ]);
+    }
 }

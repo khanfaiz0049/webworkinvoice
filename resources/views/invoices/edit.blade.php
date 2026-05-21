@@ -8,6 +8,8 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <div class="max-w-6xl mx-auto" x-data='{
+        defaultHsnCode: "9983",
+        hsnMasters: @json($hsnOptions),
         items: @json($items),
         customers: @json($customers),
         selectedCustomerId: "{{ $invoice->customer_id }}",
@@ -58,12 +60,28 @@
             }
         },
         addItem() {
-            this.items.push({ description: "", amount: 0, gst: 18, hsn: "" });
+            this.items.push({ description: "", amount: 0, gst: 18, hsn: this.defaultHsnCode });
         },
         removeItem(index) {
             if (this.items.length > 1) {
                 this.items.splice(index, 1);
             }
+        },
+        getHsnOptions(item) {
+            const options = this.hsnMasters.length
+                ? [...this.hsnMasters]
+                : [{ id: "default", service_name: "Default", hsn_code: this.defaultHsnCode }];
+
+            const targetHsn = item?.hsn || this.defaultHsnCode;
+            if (!options.some(option => option.hsn_code === targetHsn)) {
+                options.unshift({
+                    id: `legacy-${targetHsn}`,
+                    service_name: targetHsn === this.defaultHsnCode ? "Default HSN/SAC" : "Current selection",
+                    hsn_code: targetHsn,
+                });
+            }
+
+            return options;
         },
         calculateSubtotal() {
             return this.items.reduce((total, item) => total + parseFloat(item.amount || 0), 0);
@@ -180,23 +198,24 @@
                             <button type="button"
                                 @click="gstDisabled = !gstDisabled"
                                 :aria-pressed="gstDisabled.toString()"
-                                class="flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0055a4]/30">
-                                <span :class="gstDisabled ? 'bg-slate-100 text-slate-400' : 'bg-emerald-50 text-emerald-600 shadow-sm'"
-                                    class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">GST</span>
-                                <span :class="gstDisabled ? 'translate-x-0 bg-[#d32d27]' : 'translate-x-0 bg-[#0055a4]'"
-                                    class="mx-1 flex h-7 w-7 items-center justify-center rounded-full text-white shadow-sm transition">
-                                    <i data-lucide="power" class="h-3.5 w-3.5"></i>
-                                </span>
-                                <span :class="gstDisabled ? 'bg-amber-50 text-amber-700 shadow-sm' : 'bg-slate-100 text-slate-400'"
-                                    class="rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] transition">No GST</span>
+                                :class="gstDisabled ? 'bg-slate-300 focus:ring-slate-400/30' : 'bg-emerald-500 focus:ring-emerald-500/30'"
+                                class="relative h-12 w-28 overflow-hidden rounded-full border border-slate-300 shadow-sm transition duration-300 focus:outline-none focus:ring-2">
+                                <span :class="gstDisabled ? 'opacity-0' : 'opacity-100'"
+                                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-base font-black uppercase tracking-wide text-white transition duration-200">ON</span>
+                                <span :class="gstDisabled ? 'opacity-100' : 'opacity-0'"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-base font-black uppercase tracking-wide text-white transition duration-200">OFF</span>
+                                <span aria-hidden="true"
+                                    :style="gstDisabled ? 'left: 2px;' : 'left: calc(100% - 2.75rem);'"
+                                    class="absolute top-0.5 h-11 w-11 rounded-full bg-white shadow-md transition-all duration-300 ease-out"></span>
                             </button>
                             <span x-text="gstDisabled ? 'GST Disabled' : 'GST Enabled'"
-                                :class="gstDisabled ? 'text-[#d32d27]' : 'text-[#0055a4]'"
+                                :class="gstDisabled ? 'text-[#d32d27]' : 'text-emerald-600'"
                                 class="text-[10px] font-black uppercase tracking-[0.24em] mt-1 block"></span>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Number</label>
                             <input type="text" name="invoice_number" value="{{ $invoice->invoice_number }}" readonly required class="w-full bg-slate-100 border-slate-200 rounded-2xl px-5 py-4 cursor-not-allowed focus:ring-0 transition-all font-bold text-slate-500 uppercase">
@@ -205,32 +224,8 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Date</label>
                             <input type="date" name="invoice_date" value="{{ $invoice->invoice_date }}" required class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Invoice Renewals</label>
-                            <input type="date" name="renewal_date" value="{{ $invoice->renewal_date }}" class="w-full bg-slate-50 border-slate-200 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900">
-                        </div>
-                        <div class="space-y-2 relative" x-data="{ 
-                            open: false, 
-                            options: ['Domain', 'Hosting', 'AMC Yearly', 'AMC Monthly', 'SEO Monthly', 'Digital Marketing Monthly', 'GSUIT Yearly', 'ZOHO Yearly'],
-                            selected: '{{ $invoice->renewal_text }}' ? '{{ $invoice->renewal_text }}'.split(',').map(s => s.trim()) : []
-                        }">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Renewal Type of Service</label>
-                            <div class="relative">
-                                <button type="button" @click="open = !open" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between focus:ring-2 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-left">
-                                    <span x-text="selected.length ? selected.join(', ') : 'Select services...'" class="block truncate text-slate-500" :class="selected.length ? 'text-slate-900' : ''"></span>
-                                    <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
-                                </button>
-                                <div x-show="open" x-transition @click.away="open = false" style="display: none;" class="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto p-2">
-                                    <template x-for="option in options" :key="option">
-                                        <label class="flex items-center px-4 py-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors">
-                                            <input type="checkbox" :value="option" x-model="selected" name="renewal_text[]" class="rounded border-slate-300 text-[#0055a4] focus:ring-[#0055a4] w-4 h-4 mr-3">
-                                            <span x-text="option" class="text-sm font-bold text-slate-700"></span>
-                                        </label>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -276,9 +271,12 @@
                                     <div class="w-full lg:w-64 flex-shrink-0 flex flex-col gap-5">
                                         <div class="space-y-2">
                                             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block text-right lg:text-left">HSN/SAC Code</label>
-                                            <input type="text" :name="'items['+index+'][hsn_sac]'" x-model="item.hsn"
-                                                class="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 focus:bg-white focus:ring-1 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-sm"
-                                                placeholder="e.g. 9983">
+                                            <select :name="'items['+index+'][hsn_sac]'" x-model="item.hsn"
+                                                class="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 focus:bg-white focus:ring-1 focus:ring-[#0055a4] focus:border-[#0055a4] transition-all font-bold text-slate-900 text-sm">
+                                                @foreach($hsnOptions as $option)
+                                                    <option value="{{ $option['hsn_code'] }}">{{ $option['hsn_code'] }} - {{ $option['service_name'] }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
 
                                         <div class="space-y-2">

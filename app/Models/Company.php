@@ -14,13 +14,18 @@ class Company extends Model
     protected $fillable = [
         'name', 'legal_name', 'gst_number', 'hsn_code', 'pan_number', 'cin_number', 'address', 'state', 'country',
         'pincode', 'phone', 'email', 'website', 'logo', 'signature', 'bank_name', 'account_name', 'account_number',
-        'ifsc_code', 'swift_code', 'branch', 'upi_id', 'qr_code', 'invoice_prefix', 'invoice_starting_number', 'terms_conditions',
+        'ifsc_code', 'swift_code', 'branch', 'upi_id', 'qr_code', 'invoice_prefix', 'invoice_starting_number', 'performa_invoice_starting_number', 'terms_conditions',
         'footer_notes', 'is_active', 'is_default'
     ];
 
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function performaInvoices()
+    {
+        return $this->hasMany(PerformaInvoice::class);
     }
 
     public function settings()

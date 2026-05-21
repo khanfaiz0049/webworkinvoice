@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Invoice #{{ $invoice->invoice_number }}
+        Proforma Invoice #{{ $invoice->invoice_number }}
     </x-slot>
 
     @php
@@ -252,17 +252,17 @@
     <div class="max-w-5xl mx-auto pb-20 px-4">
         <!-- Top Action Bar -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 no-print">
-            <a href="{{ route('invoices.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
+            <a href="{{ route('performa-invoices.index') }}" class="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors flex items-center gap-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to list
             </a>
             <div class="flex flex-wrap gap-3">
-                <a href="{{ route('invoices.edit', $invoice) }}" class="flex items-center gap-2 px-6 py-3 bg-amber-50 rounded-2xl text-xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-all border border-amber-100">
+                <a href="{{ route('performa-invoices.edit', $invoice) }}" class="flex items-center gap-2 px-6 py-3 bg-amber-50 rounded-2xl text-xs font-black uppercase tracking-widest text-amber-600 hover:bg-amber-100 transition-all border border-amber-100">
                     <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
                 </a>
                 <button onclick="window.print()" class="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all">
                     <i data-lucide="printer" class="w-4 h-4"></i> Print
                 </button>
-                <a href="{{ route('invoices.download', $invoice) }}" class="flex items-center gap-2 px-6 py-3 bg-[#d32d27] rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-[#b21f24] transition-all shadow-lg shadow-red-500/30">
+                <a href="{{ route('performa-invoices.download', $invoice) }}" class="flex items-center gap-2 px-6 py-3 bg-[#d32d27] rounded-2xl text-xs font-black uppercase tracking-widest text-white hover:bg-[#b21f24] transition-all shadow-lg shadow-red-500/30">
                     <i data-lucide="download" class="w-4 h-4"></i> Download PDF
                 </a>
             </div>
@@ -284,10 +284,10 @@
                     
                     <div class="meta-info">
                         <div class="meta-item">Date: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
-                        <div class="meta-item">Invoice No. {{ $invoice->invoice_number }}</div>
+                        <div class="meta-item">Proforma No. {{ $invoice->invoice_number }}</div>
                     </div>
                     
-                    <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }}::</div>
+                    <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: Proforma Invoice ::</div>
                 </div>
 
                 <div class="invoice-body" style="border: 1px solid #000; border-bottom: none;">

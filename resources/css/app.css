@@ -20,3 +20,59 @@
     line-height: 1.8 !important;
 }
 
+/* Global Print Styles to clean up print layouts across the application */
+@media print {
+    body, html {
+        background: #ffffff !important;
+        color: #000000 !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    /* Hide navigation sidebar, top navbar, action buttons, and back to list */
+    aside,
+    header,
+    nav,
+    footer,
+    .no-print,
+    button,
+    .btn,
+    .bg-blue-50,
+    a[href*="edit"],
+    a[href*="create"],
+    a[href*="index"] {
+        display: none !important;
+    }
+    
+    /* Reset layout wrapper heights and overflows */
+    .flex.h-screen {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    main {
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+    
+    .max-w-5xl, .container, .max-w-7xl {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .overflow-x-auto, .shadow-2xl, .shadow-md, .shadow-sm, .shadow-lg, .shadow-xl {
+        overflow: visible !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+

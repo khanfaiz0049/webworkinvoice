@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice #{{ $invoice->invoice_number }}</title>
+    <title>Proforma Invoice #{{ $invoice->invoice_number }}</title>
     <style>
         @page { margin: 20px; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #1e293b; line-height: 1.4; margin: 0; padding: 0; }
@@ -109,10 +109,10 @@
             
             <div class="meta-info">
                 <div class="meta-item">Date: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d-m-Y') }}</div>
-                <div class="meta-item">Invoice No. {{ $invoice->invoice_number }}</div>
+                <div class="meta-item">Proforma No. {{ $invoice->invoice_number }}</div>
             </div>
             
-            <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: {{ $invoice->gst_enabled ? 'Tax Invoice' : 'Invoice' }}::</div>
+            <div style="text-align: center; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 10px;">:: Proforma Invoice ::</div>
         </div>
 
         <div class="invoice-body" style="border: 1px solid #000; border-bottom: none;">

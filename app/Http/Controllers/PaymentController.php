@@ -10,9 +10,36 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with(['customer', 'invoice'])->get();
+        $query = Payment::with(['customer', 'invoice.company']);
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('payment_method', 'like', "%{$search}%")
+                  ->orWhere('received_in', 'like', "%{$search}%")
+                  ->orWhere('transaction_id', 'like', "%{$search}%")
+                  ->orWhere('reference_notes', 'like', "%{$search}%")
+                  ->orWhereHas('customer', function($cQ) use ($search) {
+                      $cQ->where('name', 'like', "%{$search}%")
+                         ->orWhere('company_name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('invoice', function($iQ) use ($search) {
+                      $iQ->where('invoice_number', 'like', "%{$search}%")
+                         ->orWhereHas('company', function($coQ) use ($search) {
+                             $coQ->where('name', 'like', "%{$search}%");
+                         });
+                  });
+            });
+        }
+
+        $payments = $query->latest('payment_date')->get();
+
+        if ($request->ajax()) {
+            return view('payments.partials.table', compact('payments'))->render();
+        }
+
         return view('payments.index', compact('payments'));
     }
 
@@ -71,7 +98,7 @@ class PaymentController extends Controller
                 }
             }
 
-            $payment->delete();
+            $payment->forceDelete();
 
             DB::commit();
             return redirect()->route('payments.index')->with('success', 'Payment undone successfully.');
