@@ -15,7 +15,7 @@
                     </div>
                     <span class="text-[10px] font-black text-green-500 bg-green-50 px-2 py-1 rounded-lg uppercase tracking-widest">Revenue</span>
                 </div>
-                <h3 class="text-3xl font-black text-slate-900 italic tracking-tighter">₹{{ number_format($totalRevenue, 2) }}</h3>
+                <h3 class="text-3xl font-black text-slate-900 italic tracking-tighter">₹{{ number_format($totalRevenue, 0) }}</h3>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Total Collections</p>
             </div>
 
@@ -27,7 +27,7 @@
                     </div>
                     <span class="text-[10px] font-black text-red-500 bg-red-50 px-2 py-1 rounded-lg uppercase tracking-widest">Pending</span>
                 </div>
-                <h3 class="text-3xl font-black text-slate-900 italic tracking-tighter">₹{{ number_format($totalOutstanding, 2) }}</h3>
+                <h3 class="text-3xl font-black text-slate-900 italic tracking-tighter">₹{{ number_format($totalOutstanding, 0) }}</h3>
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Total Outstanding</p>
             </div>
 
@@ -88,7 +88,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <p class="text-xs font-black text-green-600 italic">₹{{ number_format($payment->amount, 2) }}</p>
+                            <p class="text-xs font-black text-green-600 italic">₹{{ number_format($payment->amount, 0) }}</p>
                         </div>
                     @empty
                         <div class="text-center py-10">

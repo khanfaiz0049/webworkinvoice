@@ -17,6 +17,22 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Hide number input spinners globally -->
+        <style>
+            /* Chrome, Safari, Edge, Opera */
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            /* Firefox */
+            input[type=number] {
+                -moz-appearance: textfield;
+                appearance: textfield;
+            }
+        </style>
     </head>
     <body class="font-sans antialiased bg-slate-50 text-slate-900">
         <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">

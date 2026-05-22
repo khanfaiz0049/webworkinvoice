@@ -14,7 +14,7 @@
                  </div>
              @endif
          </td>
-        <td class="px-4 sm:px-6 py-6 font-black text-slate-900 italic">₹{{ number_format($invoice->grand_total, 2) }}</td>
+        <td class="px-4 sm:px-6 py-6 font-black text-slate-900 italic">₹{{ number_format($invoice->grand_total, 0) }}</td>
         <td class="px-4 sm:px-6 py-6">
             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest {{ $invoice->status == 'paid' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600' }}">
                 {{ $invoice->status }}

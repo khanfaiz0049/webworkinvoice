@@ -52,6 +52,7 @@ class Project extends Model
     }
 
     public const RENEWAL_PERIODS = [
+        'none'     => 'None',
         '1_month'  => '1 Month',
         '3_months' => '3 Months',
         '6_months' => '6 Months',

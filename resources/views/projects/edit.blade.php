@@ -56,8 +56,12 @@
         },
         startDate: "{{ old('start_date', $project->start_date->format('Y-m-d')) }}",
         renewalPeriod: "{{ old('renewal_period', $project->renewal_period) }}",
-        renewalDate: "{{ old('renewal_date', $project->renewal_date->format('Y-m-d')) }}",
+        renewalDate: "{{ old('renewal_date', $project->renewal_date ? $project->renewal_date->format('Y-m-d') : '') }}",
         updateRenewalDate() {
+            if (this.renewalPeriod === "none") {
+                this.renewalDate = "";
+                return;
+            }
             if (!this.startDate || !this.renewalPeriod) return;
             try {
                 const date = new Date(this.startDate);

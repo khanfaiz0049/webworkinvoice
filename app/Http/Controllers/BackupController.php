@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Storage;
  * - Upload & restore a SQL file
  * - List stored backups
  * - Delete a stored backup
+ *
+ * Uses pure PHP (PDO) — no shell commands.
+ * Safe for Hostinger and shared hosting environments.
  */
 class BackupController extends Controller
 {
@@ -42,7 +45,7 @@ class BackupController extends Controller
      *
      * POST /backup/download
      */
-    public function download(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+    public function download(Request $request): \Illuminate\Http\RedirectResponse
     {
         $gzip   = (bool) $request->input('gzip', false);
         $result = $this->backupService->createBackup(gzip: $gzip);
@@ -52,14 +55,7 @@ class BackupController extends Controller
                 ->with('error', $result['message']);
         }
 
-        $filePath = $result['path'];
-        $filename = $result['filename'];
-        $mime     = $gzip ? 'application/gzip' : 'application/sql';
-
-        return response()->download($filePath, $filename, [
-            'Content-Type'        => $mime,
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-        ]);
+        return redirect()->route('backup.files.download', $result['filename']);
     }
 
     /**
@@ -121,8 +117,7 @@ class BackupController extends Controller
         // ── Run the restore ────────────────────────────────────────────────
         $result = $this->backupService->restoreBackup($tempPath);
 
-        $sessionKey = $result['success'] ? 'success' : 'error';
-        $log        = $result['log'] ?? [];
+        $log = $result['log'] ?? [];
 
         if ($result['success']) {
             session()->flash('backup_log', $log);

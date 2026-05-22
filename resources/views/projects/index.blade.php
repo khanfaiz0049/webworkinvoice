@@ -40,8 +40,8 @@
                 <tbody class="divide-y divide-slate-50">
                     @forelse($projects as $project)
                         @php
-                            $isOverdue = $project->renewal_date->isPast() && $project->status === 'open';
-                            $isDueSoon = !$project->renewal_date->isPast() && $project->renewal_date->diffInDays(now()) <= 7 && $project->status === 'open';
+                            $isOverdue = $project->renewal_date && $project->renewal_date->isPast() && $project->status === 'open';
+                            $isDueSoon = $project->renewal_date && !$project->renewal_date->isPast() && $project->renewal_date->diffInDays(now()) <= 7 && $project->status === 'open';
                         @endphp
                         <tr class="group hover:bg-blue-50/30 transition-colors {{ $isOverdue ? 'bg-red-50/20' : '' }}">
                             {{-- Project Name --}}
@@ -67,17 +67,21 @@
 
                             {{-- Amount --}}
                             <td class="px-4 sm:px-6 lg:px-10 py-6">
-                                <span class="text-sm font-black text-slate-900">₹{{ number_format($project->amount, 2) }}</span>
+                                <span class="text-sm font-black text-slate-900">₹{{ number_format($project->amount, 0) }}</span>
                             </td>
 
                             {{-- Renewal --}}
                             <td class="px-4 sm:px-6 lg:px-10 py-6">
                                 <div class="text-sm font-bold {{ $isOverdue ? 'text-red-500' : ($isDueSoon ? 'text-amber-500' : 'text-slate-500') }}">
-                                    {{ $project->renewal_date->format('d M, Y') }}
-                                    @if($isOverdue)
-                                        <span class="block text-[8px] font-black uppercase tracking-widest text-red-500">Overdue</span>
-                                    @elseif($isDueSoon)
-                                        <span class="block text-[8px] font-black uppercase tracking-widest text-amber-500">Due Soon</span>
+                                    @if($project->renewal_date)
+                                        {{ $project->renewal_date->format('d M, Y') }}
+                                        @if($isOverdue)
+                                            <span class="block text-[8px] font-black uppercase tracking-widest text-red-500">Overdue</span>
+                                        @elseif($isDueSoon)
+                                            <span class="block text-[8px] font-black uppercase tracking-widest text-amber-500">Due Soon</span>
+                                        @endif
+                                    @else
+                                        <span class="text-slate-400 font-bold uppercase tracking-widest">—</span>
                                     @endif
                                 </div>
                                 <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-500 mt-1 inline-block">{{ $project->renewal_period_label }}</span>

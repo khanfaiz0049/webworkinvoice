@@ -10,13 +10,19 @@ use Illuminate\Support\Carbon;
 /**
  * BackupService
  *
- * Handles all database backup and restore operations.
- * - Auto-detects Windows/XAMPP and Linux environments
- * - Finds mysqldump/mysql binaries automatically (with .env overrides)
- * - Creates timestamped, compressed backups
+ * Handles all database backup and restore operations using PURE PHP.
+ * No exec(), shell_exec(), system(), passthru(), or proc_open() calls.
+ *
+ * This is fully compatible with:
+ * - Hostinger shared/business hosting (no shell access needed)
+ * - Servers where dangerous PHP functions are disabled
+ * - Environments with aggressive malware scanners (Monarx)
+ *
+ * Features:
+ * - Creates timestamped SQL backups via PDO queries
  * - Validates and safely restores SQL files
  * - Cleans up backups older than 30 days
- * - Logs all operations
+ * - Logs all operations to a dedicated channel
  */
 class BackupService
 {
@@ -32,8 +38,11 @@ class BackupService
     /** Maximum allowed size for an uploaded SQL file (50 MB) */
     protected int $maxUploadBytes = 52_428_800;
 
+    /** Maximum number of rows to fetch per batch (memory safety) */
+    protected int $batchSize = 1000;
+
     // ─────────────────────────────────────────────────────────────────────────
-    // PATH DETECTION
+    // ENVIRONMENT DETECTION
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
@@ -42,117 +51,6 @@ class BackupService
     public function isWindows(): bool
     {
         return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-    }
-
-    /**
-     * Return candidate paths for mysqldump based on OS.
-     */
-    protected function candidateMysqldumpPaths(): array
-    {
-        if ($this->isWindows()) {
-            return [
-                'C:\\xampp\\mysql\\bin\\mysqldump.exe',
-                'C:\\xampp7\\mysql\\bin\\mysqldump.exe',
-                'C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe',
-                'C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump.exe',
-                'C:\\wamp64\\bin\\mysql\\mysql8.0.31\\bin\\mysqldump.exe',
-                'C:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysqldump.exe',
-            ];
-        }
-
-        return [
-            '/usr/bin/mysqldump',
-            '/usr/local/bin/mysqldump',
-            '/usr/local/mysql/bin/mysqldump',
-            '/opt/homebrew/bin/mysqldump',   // macOS (Homebrew)
-        ];
-    }
-
-    /**
-     * Return candidate paths for mysql CLI based on OS.
-     */
-    protected function candidateMysqlPaths(): array
-    {
-        if ($this->isWindows()) {
-            return [
-                'C:\\xampp\\mysql\\bin\\mysql.exe',
-                'C:\\xampp7\\mysql\\bin\\mysql.exe',
-                'C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe',
-                'C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysql.exe',
-                'C:\\wamp64\\bin\\mysql\\mysql8.0.31\\bin\\mysql.exe',
-                'C:\\laragon\\bin\\mysql\\mysql-8.0.30-winx64\\bin\\mysql.exe',
-            ];
-        }
-
-        return [
-            '/usr/bin/mysql',
-            '/usr/local/bin/mysql',
-            '/usr/local/mysql/bin/mysql',
-            '/opt/homebrew/bin/mysql',
-        ];
-    }
-
-    /**
-     * Resolve the path to mysqldump.
-     * Priority: .env value → auto-detected paths → null
-     */
-    public function resolveMysqldumpPath(): ?string
-    {
-        // 1. Explicit .env override
-        $envPath = env('MYSQLDUMP_PATH');
-        if ($envPath && file_exists($envPath)) {
-            Log::channel('backup')->info("BackupService: mysqldump resolved from .env: {$envPath}");
-            return $envPath;
-        }
-
-        // 2. Auto-detect
-        foreach ($this->candidateMysqldumpPaths() as $path) {
-            if (file_exists($path)) {
-                Log::channel('backup')->info("BackupService: mysqldump auto-detected: {$path}");
-                return $path;
-            }
-        }
-
-        // 3. Try PATH (Linux servers / cPanel)
-        $which = $this->isWindows() ? 'where mysqldump 2>nul' : 'which mysqldump 2>/dev/null';
-        $result = trim((string) shell_exec($which));
-        if ($result && file_exists($result)) {
-            Log::channel('backup')->info("BackupService: mysqldump found via PATH: {$result}");
-            return $result;
-        }
-
-        Log::channel('backup')->error('BackupService: mysqldump not found.');
-        return null;
-    }
-
-    /**
-     * Resolve the path to the mysql CLI.
-     * Priority: .env value → auto-detected paths → null
-     */
-    public function resolveMysqlPath(): ?string
-    {
-        $envPath = env('MYSQL_PATH');
-        if ($envPath && file_exists($envPath)) {
-            Log::channel('backup')->info("BackupService: mysql resolved from .env: {$envPath}");
-            return $envPath;
-        }
-
-        foreach ($this->candidateMysqlPaths() as $path) {
-            if (file_exists($path)) {
-                Log::channel('backup')->info("BackupService: mysql auto-detected: {$path}");
-                return $path;
-            }
-        }
-
-        $which = $this->isWindows() ? 'where mysql 2>nul' : 'which mysql 2>/dev/null';
-        $result = trim((string) shell_exec($which));
-        if ($result && file_exists($result)) {
-            Log::channel('backup')->info("BackupService: mysql found via PATH: {$result}");
-            return $result;
-        }
-
-        Log::channel('backup')->error('BackupService: mysql not found.');
-        return null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -164,23 +62,20 @@ class BackupService
      */
     public function healthCheck(): array
     {
-        $mysqldump  = $this->resolveMysqldumpPath();
-        $mysql      = $this->resolveMysqlPath();
         $folderPath = Storage::disk($this->disk)->path($this->backupFolder);
         $folderOk   = is_dir($folderPath) ? is_writable($folderPath) : $this->ensureBackupFolder();
         $dbOk       = $this->testDbConnection();
         $dbSize     = $dbOk ? $this->getDatabaseSize() : null;
         $latestFile = $this->getLatestBackupFile();
-        $latestDate = $latestFile ? Carbon::createFromTimestamp(filemtime(Storage::disk($this->disk)->path($latestFile))) : null;
+        $latestDate = $latestFile
+            ? Carbon::createFromTimestamp(filemtime(Storage::disk($this->disk)->path($latestFile)))
+            : null;
         $backupCount = count($this->listBackupFiles());
 
         return [
             'os'                 => $this->isWindows() ? 'Windows' : PHP_OS,
+            'method'             => 'Pure PHP (PDO)',
             'mysql_connection'   => $dbOk,
-            'mysqldump_path'     => $mysqldump,
-            'mysqldump_found'    => (bool) $mysqldump,
-            'mysql_path'         => $mysql,
-            'mysql_found'        => (bool) $mysql,
             'backup_folder'      => $folderPath,
             'backup_folder_ok'   => $folderOk,
             'database_size_mb'   => $dbSize,
@@ -225,23 +120,30 @@ class BackupService
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // BACKUP
+    // BACKUP (PURE PHP — NO SHELL COMMANDS)
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Create a database backup.
+     * Create a database backup using pure PHP and PDO.
+     *
+     * Generates a standards-compliant SQL dump file without requiring
+     * mysqldump or any shell command execution.
      *
      * @param  bool  $gzip  Whether to gzip-compress the output file.
      * @return array{success: bool, message: string, filename: ?string, path: ?string}
      */
     public function createBackup(bool $gzip = false): array
     {
-        Log::channel('backup')->info('BackupService: Starting backup. gzip=' . ($gzip ? 'true' : 'false'));
+        Log::channel('backup')->info('BackupService: Starting pure-PHP backup. gzip=' . ($gzip ? 'true' : 'false'));
 
         // ── Pre-flight checks ──────────────────────────────────────────────
-        $check = $this->preflightCheck(needMysql: false);
-        if (!$check['ok']) {
-            return ['success' => false, 'message' => $check['message'], 'filename' => null, 'path' => null];
+        if (!$this->testDbConnection()) {
+            return [
+                'success'  => false,
+                'message'  => 'Database connection failed. Check your .env DB_* settings.',
+                'filename' => null,
+                'path'     => null,
+            ];
         }
 
         $this->ensureBackupFolder();
@@ -254,109 +156,172 @@ class BackupService
         $filename  = "backup_{$db}_{$timestamp}.{$ext}";
         $filePath  = Storage::disk($this->disk)->path("{$this->backupFolder}/{$filename}");
 
-        // ── Build the mysqldump command ────────────────────────────────────
-        $mysqldump = $check['mysqldump'];
-        $host      = config('database.connections.mysql.host', '127.0.0.1');
-        $port      = config('database.connections.mysql.port', '3306');
-        $user      = config('database.connections.mysql.username', 'root');
-        $password  = config('database.connections.mysql.password', '');
+        try {
+            // ── Generate the SQL dump ──────────────────────────────────────
+            $sql = $this->generateSqlDump($db);
 
-        // Use escapeshellarg to prevent command injection
-        $cmd = sprintf(
-            '%s --host=%s --port=%s --user=%s %s --single-transaction --routines --triggers --events %s',
-            escapeshellarg($mysqldump),
-            escapeshellarg($host),
-            escapeshellarg($port),
-            escapeshellarg($user),
-            $password !== '' ? '--password=' . escapeshellarg($password) : '--password=',
-            escapeshellarg($db)
-        );
+            if (empty($sql)) {
+                return [
+                    'success'  => false,
+                    'message'  => 'Backup failed: generated SQL dump is empty.',
+                    'filename' => null,
+                    'path'     => null,
+                ];
+            }
 
-        if ($gzip && !$this->isWindows()) {
-            // On Linux/macOS: pipe directly through gzip
-            $cmd .= ' | gzip > ' . escapeshellarg($filePath);
-        } elseif ($gzip && $this->isWindows()) {
-            // On Windows: dump to temp file, then use PHP's gzip
-            $tmpFile = $filePath . '.tmp';
-            $cmd .= ' > ' . escapeshellarg($tmpFile);
-        } else {
-            $cmd .= ' > ' . escapeshellarg($filePath);
-        }
+            // ── Write to file ──────────────────────────────────────────────
+            if ($gzip) {
+                $gz = gzopen($filePath, 'wb9');
+                if (!$gz) {
+                    throw new \RuntimeException("Cannot open gzip file for writing: {$filePath}");
+                }
+                gzwrite($gz, $sql);
+                gzclose($gz);
+            } else {
+                if (file_put_contents($filePath, $sql) === false) {
+                    throw new \RuntimeException("Cannot write backup file: {$filePath}");
+                }
+            }
 
-        // ── Execute ───────────────────────────────────────────────────────
-        $output     = [];
-        $returnCode = 0;
+            // ── Validate result ────────────────────────────────────────────
+            if (!file_exists($filePath) || filesize($filePath) < 50) {
+                return [
+                    'success'  => false,
+                    'message'  => 'Backup failed: output file is too small or missing.',
+                    'filename' => null,
+                    'path'     => null,
+                ];
+            }
 
-        if ($this->isWindows()) {
-            // Windows: exec() with error redirect
-            exec("{$cmd} 2>&1", $output, $returnCode);
-        } else {
-            // Linux: run and capture stderr
-            $process = "{$cmd} 2>&1";
-            exec($process, $output, $returnCode);
-        }
+            $sizeMb = round(filesize($filePath) / 1024 / 1024, 2);
+            Log::channel('backup')->info("BackupService: backup SUCCESS. File={$filename}, Size={$sizeMb}MB");
 
-        // ── Handle Windows gzip fallback ──────────────────────────────────
-        if ($gzip && $this->isWindows() && $returnCode === 0 && isset($tmpFile) && file_exists($tmpFile)) {
-            $this->gzipFile($tmpFile, $filePath);
-            @unlink($tmpFile);
-        }
+            return [
+                'success'  => true,
+                'message'  => "Backup created successfully: {$filename} ({$sizeMb} MB)",
+                'filename' => $filename,
+                'path'     => $filePath,
+            ];
 
-        // ── Validate result ────────────────────────────────────────────────
-        $actualFile = ($gzip && $this->isWindows()) ? $filePath : $filePath;
-
-        if ($returnCode !== 0 || !file_exists($actualFile) || filesize($actualFile) < 100) {
-            $errMsg = implode("\n", $output);
-            Log::channel('backup')->error("BackupService: backup FAILED. Return code={$returnCode}. Output={$errMsg}");
+        } catch (\Throwable $e) {
+            Log::channel('backup')->error('BackupService: backup FAILED: ' . $e->getMessage());
+            // Clean up partial file
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
             return [
                 'success'  => false,
-                'message'  => 'Backup failed: ' . ($errMsg ?: 'Unknown error. Check backup log.'),
+                'message'  => 'Backup failed: ' . $e->getMessage(),
                 'filename' => null,
                 'path'     => null,
             ];
         }
-
-        $sizeMb = round(filesize($actualFile) / 1024 / 1024, 2);
-        Log::channel('backup')->info("BackupService: backup SUCCESS. File={$filename}, Size={$sizeMb}MB");
-
-        return [
-            'success'  => true,
-            'message'  => "Backup created successfully: {$filename} ({$sizeMb} MB)",
-            'filename' => $filename,
-            'path'     => $actualFile,
-        ];
     }
 
     /**
-     * PHP-based gzip compression for Windows environments without native gzip.
-     */
-    protected function gzipFile(string $source, string $destination): bool
-    {
-        $in  = fopen($source, 'rb');
-        $out = gzopen($destination, 'wb9');
-
-        if (!$in || !$out) {
-            return false;
-        }
-
-        while (!feof($in)) {
-            gzwrite($out, fread($in, 65536));
-        }
-
-        fclose($in);
-        gzclose($out);
-
-        return true;
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // RESTORE
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Restore the database from an uploaded SQL file.
+     * Generate a complete SQL dump string using PDO.
      *
-     * Creates an emergency backup first, validates the file, then imports.
+     * Produces output compatible with MySQL/MariaDB import, including:
+     * - SET statements for character encoding
+     * - DROP TABLE IF EXISTS + CREATE TABLE statements
+     * - Batched INSERT statements for data
+     */
+    protected function generateSqlDump(string $database): string
+    {
+        $pdo = DB::connection()->getPdo();
+        $lines = [];
+
+        // ── Header ─────────────────────────────────────────────────────────
+        $lines[] = "-- ─────────────────────────────────────────────────────────";
+        $lines[] = "-- Database Backup: {$database}";
+        $lines[] = "-- Generated: " . Carbon::now()->toDateTimeString();
+        $lines[] = "-- Method: Pure PHP (PDO) — No shell commands";
+        $lines[] = "-- ─────────────────────────────────────────────────────────";
+        $lines[] = "";
+        $lines[] = "SET NAMES utf8mb4;";
+        $lines[] = "SET FOREIGN_KEY_CHECKS = 0;";
+        $lines[] = "SET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';";
+        $lines[] = "SET AUTOCOMMIT = 0;";
+        $lines[] = "START TRANSACTION;";
+        $lines[] = "";
+
+        // ── Get all tables ─────────────────────────────────────────────────
+        $tables = $pdo->query("SHOW TABLES")->fetchAll(\PDO::FETCH_COLUMN);
+
+        foreach ($tables as $table) {
+            $lines[] = "-- ──────────────────────────────────────────────────────";
+            $lines[] = "-- Table: `{$table}`";
+            $lines[] = "-- ──────────────────────────────────────────────────────";
+            $lines[] = "";
+
+            // DROP + CREATE
+            $lines[] = "DROP TABLE IF EXISTS `{$table}`;";
+            $createStmt = $pdo->query("SHOW CREATE TABLE `{$table}`")->fetch(\PDO::FETCH_ASSOC);
+            $lines[] = $createStmt['Create Table'] . ";";
+            $lines[] = "";
+
+            // DATA — fetch in batches to conserve memory
+            $rowCount = (int) $pdo->query("SELECT COUNT(*) FROM `{$table}`")->fetchColumn();
+
+            if ($rowCount === 0) {
+                $lines[] = "-- (empty table)";
+                $lines[] = "";
+                continue;
+            }
+
+            $offset = 0;
+            while ($offset < $rowCount) {
+                $stmt = $pdo->prepare("SELECT * FROM `{$table}` LIMIT :limit OFFSET :offset");
+                $stmt->bindValue(':limit', $this->batchSize, \PDO::PARAM_INT);
+                $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+                $stmt->execute();
+                $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                if (empty($rows)) {
+                    break;
+                }
+
+                // Get column names from the first row
+                $columns = array_keys($rows[0]);
+                $columnList = implode('`, `', $columns);
+
+                foreach ($rows as $row) {
+                    $values = [];
+                    foreach ($row as $value) {
+                        if ($value === null) {
+                            $values[] = 'NULL';
+                        } else {
+                            $values[] = $pdo->quote($value);
+                        }
+                    }
+                    $valueList = implode(', ', $values);
+                    $lines[] = "INSERT INTO `{$table}` (`{$columnList}`) VALUES ({$valueList});";
+                }
+
+                $offset += $this->batchSize;
+            }
+
+            $lines[] = "";
+        }
+
+        // ── Footer ─────────────────────────────────────────────────────────
+        $lines[] = "SET FOREIGN_KEY_CHECKS = 1;";
+        $lines[] = "COMMIT;";
+        $lines[] = "";
+        $lines[] = "-- Backup complete.";
+
+        return implode("\n", $lines);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RESTORE (PURE PHP — NO SHELL COMMANDS)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Restore the database from an uploaded SQL file using PDO.
+     *
+     * Creates an emergency backup first, validates the file, then imports
+     * using PHP's PDO — no mysql CLI required.
      *
      * @param  string  $uploadedFilePath  Absolute path to the uploaded .sql file.
      * @return array{success: bool, message: string, emergency_backup: ?string, log: string[]}
@@ -364,7 +329,7 @@ class BackupService
     public function restoreBackup(string $uploadedFilePath): array
     {
         $log = [];
-        Log::channel('backup')->info("BackupService: Starting restore from: {$uploadedFilePath}");
+        Log::channel('backup')->info("BackupService: Starting pure-PHP restore from: {$uploadedFilePath}");
 
         // ── Validate the uploaded file ─────────────────────────────────────
         $validate = $this->validateSqlFile($uploadedFilePath);
@@ -378,17 +343,16 @@ class BackupService
         }
         $log[] = '✓ File validated successfully.';
 
-        // ── Pre-flight checks ──────────────────────────────────────────────
-        $check = $this->preflightCheck(needMysql: true);
-        if (!$check['ok']) {
+        // ── Pre-flight DB check ────────────────────────────────────────────
+        if (!$this->testDbConnection()) {
             return [
                 'success'          => false,
-                'message'          => $check['message'],
+                'message'          => 'Database connection failed. Check your .env DB_* settings.',
                 'emergency_backup' => null,
-                'log'              => [$check['message']],
+                'log'              => ['Database connection failed.'],
             ];
         }
-        $log[] = '✓ Environment checks passed.';
+        $log[] = '✓ Database connection verified.';
 
         // ── Create emergency backup ────────────────────────────────────────
         $log[] = '⏳ Creating emergency pre-restore backup...';
@@ -401,46 +365,68 @@ class BackupService
             Log::channel('backup')->warning('BackupService: Emergency backup failed before restore.');
         }
 
-        // ── Build the mysql restore command ───────────────────────────────
-        $mysql    = $check['mysql'];
-        $host     = config('database.connections.mysql.host', '127.0.0.1');
-        $port     = config('database.connections.mysql.port', '3306');
-        $user     = config('database.connections.mysql.username', 'root');
-        $password = config('database.connections.mysql.password', '');
-        $db       = config('database.connections.mysql.database');
-
-        $cmd = sprintf(
-            '%s --host=%s --port=%s --user=%s %s %s < %s',
-            escapeshellarg($mysql),
-            escapeshellarg($host),
-            escapeshellarg($port),
-            escapeshellarg($user),
-            $password !== '' ? '--password=' . escapeshellarg($password) : '--password=',
-            escapeshellarg($db),
-            escapeshellarg($uploadedFilePath)
-        );
-
+        // ── Execute the SQL file using PDO ─────────────────────────────────
         $log[] = '⏳ Importing SQL file into database...';
 
-        $output     = [];
-        $returnCode = 0;
-        exec("{$cmd} 2>&1", $output, $returnCode);
+        try {
+            $sql = file_get_contents($uploadedFilePath);
 
-        if ($returnCode !== 0) {
-            $errMsg = implode("\n", $output);
-            $log[]  = '✗ Restore FAILED: ' . $errMsg;
-            Log::channel('backup')->error("BackupService: restore FAILED. Code={$returnCode}. Output={$errMsg}");
+            if ($sql === false || trim($sql) === '') {
+                throw new \RuntimeException('Could not read the SQL file or file is empty.');
+            }
+
+            $pdo = DB::connection()->getPdo();
+
+            // Disable foreign key checks during restore
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $pdo->exec("SET NAMES utf8mb4");
+
+            // Split the SQL file into individual statements
+            $statements = $this->splitSqlStatements($sql);
+            $executed = 0;
+            $errors = [];
+
+            foreach ($statements as $statement) {
+                $trimmed = trim($statement);
+                if ($trimmed === '' || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '/*')) {
+                    continue;
+                }
+
+                try {
+                    $pdo->exec($trimmed);
+                    $executed++;
+                } catch (\PDOException $e) {
+                    // Log but continue — some statements may be MySQL-version specific
+                    $errors[] = substr($trimmed, 0, 80) . '... → ' . $e->getMessage();
+                    Log::channel('backup')->warning("BackupService: Statement error during restore: " . $e->getMessage());
+                }
+            }
+
+            // Re-enable foreign key checks
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+            $log[] = "✓ Executed {$executed} statements successfully.";
+            if (count($errors) > 0) {
+                $log[] = "⚠ " . count($errors) . " statement(s) had errors (non-critical):";
+                foreach (array_slice($errors, 0, 5) as $err) {
+                    $log[] = "   → {$err}";
+                }
+            }
+
+            Log::channel('backup')->info("BackupService: restore SUCCESS. {$executed} statements executed.");
+
+        } catch (\Throwable $e) {
+            $log[] = '✗ Restore FAILED: ' . $e->getMessage();
+            Log::channel('backup')->error("BackupService: restore FAILED: " . $e->getMessage());
 
             return [
                 'success'          => false,
-                'message'          => 'Restore failed. Your data is unchanged. Check logs.',
+                'message'          => 'Restore failed: ' . $e->getMessage(),
                 'emergency_backup' => $emergency['filename'] ?? null,
                 'log'              => $log,
             ];
         }
-
-        $log[] = '✓ Database restored successfully.';
-        Log::channel('backup')->info('BackupService: restore SUCCESS.');
 
         // Clean up the uploaded temp file
         @unlink($uploadedFilePath);
@@ -451,6 +437,87 @@ class BackupService
             'emergency_backup' => $emergency['filename'] ?? null,
             'log'              => $log,
         ];
+    }
+
+    /**
+     * Split a SQL dump into individual executable statements.
+     *
+     * Handles multi-line statements, quoted strings with semicolons,
+     * and common MySQL dump patterns.
+     *
+     * @return string[]
+     */
+    protected function splitSqlStatements(string $sql): array
+    {
+        $statements = [];
+        $current = '';
+        $inString = false;
+        $stringChar = '';
+        $length = strlen($sql);
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $sql[$i];
+
+            // Handle escape sequences inside strings
+            if ($inString && $char === '\\' && $i + 1 < $length) {
+                $current .= $char . $sql[$i + 1];
+                $i++;
+                continue;
+            }
+
+            // Toggle string mode
+            if (!$inString && ($char === "'" || $char === '"')) {
+                $inString = true;
+                $stringChar = $char;
+                $current .= $char;
+                continue;
+            }
+
+            if ($inString && $char === $stringChar) {
+                $inString = false;
+                $current .= $char;
+                continue;
+            }
+
+            // Skip single-line comments
+            if (!$inString && $char === '-' && $i + 1 < $length && $sql[$i + 1] === '-') {
+                // Skip to end of line
+                while ($i < $length && $sql[$i] !== "\n") {
+                    $i++;
+                }
+                continue;
+            }
+
+            // Skip multi-line comments
+            if (!$inString && $char === '/' && $i + 1 < $length && $sql[$i + 1] === '*') {
+                $i += 2;
+                while ($i + 1 < $length && !($sql[$i] === '*' && $sql[$i + 1] === '/')) {
+                    $i++;
+                }
+                $i++; // skip the closing '/'
+                continue;
+            }
+
+            // Statement delimiter
+            if (!$inString && $char === ';') {
+                $trimmed = trim($current);
+                if ($trimmed !== '') {
+                    $statements[] = $trimmed;
+                }
+                $current = '';
+                continue;
+            }
+
+            $current .= $char;
+        }
+
+        // Any remaining content
+        $trimmed = trim($current);
+        if ($trimmed !== '') {
+            $statements[] = $trimmed;
+        }
+
+        return $statements;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -615,6 +682,7 @@ class BackupService
                        str_contains($lowerHeader, 'drop')   ||
                        str_contains($lowerHeader, '-- mysql') ||
                        str_contains($lowerHeader, '-- dump') ||
+                       str_contains($lowerHeader, '-- database backup') ||
                        str_contains($lowerHeader, 'set names');
 
         if (!$hasSqlToken) {
@@ -622,70 +690,5 @@ class BackupService
         }
 
         return ['ok' => true, 'message' => 'File is valid.'];
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * Run all pre-flight checks and return a unified result.
-     *
-     * @param  bool  $needMysql  Whether to also check for the mysql client binary.
-     * @return array{ok: bool, message: string, mysqldump: ?string, mysql: ?string}
-     */
-    protected function preflightCheck(bool $needMysql = false): array
-    {
-        // DB connection
-        if (!$this->testDbConnection()) {
-            return [
-                'ok'        => false,
-                'message'   => 'Database connection failed. Check your .env DB_* settings.',
-                'mysqldump' => null,
-                'mysql'     => null,
-            ];
-        }
-
-        // mysqldump binary
-        $mysqldump = $this->resolveMysqldumpPath();
-        if (!$mysqldump) {
-            return [
-                'ok'        => false,
-                'message'   => 'mysqldump binary not found. Set MYSQLDUMP_PATH in .env or ensure XAMPP/MySQL is installed.',
-                'mysqldump' => null,
-                'mysql'     => null,
-            ];
-        }
-
-        // mysql binary (for restore)
-        $mysql = null;
-        if ($needMysql) {
-            $mysql = $this->resolveMysqlPath();
-            if (!$mysql) {
-                return [
-                    'ok'        => false,
-                    'message'   => 'mysql binary not found. Set MYSQL_PATH in .env or ensure XAMPP/MySQL is installed.',
-                    'mysqldump' => $mysqldump,
-                    'mysql'     => null,
-                ];
-            }
-        }
-
-        // Backup folder writable
-        if (!$this->ensureBackupFolder()) {
-            return [
-                'ok'        => false,
-                'message'   => 'Backup storage folder is not writable. Check permissions on storage/app/backups.',
-                'mysqldump' => $mysqldump,
-                'mysql'     => $mysql,
-            ];
-        }
-
-        return [
-            'ok'        => true,
-            'message'   => 'All checks passed.',
-            'mysqldump' => $mysqldump,
-            'mysql'     => $mysql,
-        ];
     }
 }

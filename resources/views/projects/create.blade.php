@@ -55,6 +55,7 @@
         startDate: "{{ old('start_date', date('Y-m-d')) }}",
         renewalPeriod: "{{ old('renewal_period', '1_month') }}",
         getRenewalDate() {
+            if (this.renewalPeriod === "none") return "";
             if (!this.startDate || !this.renewalPeriod) return "";
             try {
                 const date = new Date(this.startDate);

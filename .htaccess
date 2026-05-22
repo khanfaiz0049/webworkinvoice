@@ -1,9 +1,11 @@
 # ------------------------------------------------------------------------------
-# SECURE LARAVEL ROOT HTACCESS
+# LARAVEL ROOT HTACCESS — Hostinger Compatible
 # ------------------------------------------------------------------------------
-# This file secures your Laravel root directory on production servers.
-# It protects sensitive directories from being publicly accessed or scanned,
-# prevents directory listing, and routes traffic cleanly to the public folder.
+# Routes all traffic to the public/ subfolder. On Hostinger, this file should
+# only exist if your entire Laravel project is deployed into public_html.
+#
+# For the recommended setup (project OUTSIDE public_html), this file is not
+# needed — the public_html/index.php points directly to the project.
 # ------------------------------------------------------------------------------
 
 <IfModule mod_rewrite.c>
@@ -17,15 +19,8 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-# ------------------------------------------------------------------------------
-# SECURITY RULES
-# ------------------------------------------------------------------------------
-
 # Disable directory browsing
 Options -Indexes
-
-# Block public access to sensitive system directories
-RedirectMatch 404 ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor)
 
 # Block access to any hidden files starting with a dot (including .env)
 <FilesMatch "^\.">

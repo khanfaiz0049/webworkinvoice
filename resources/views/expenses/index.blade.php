@@ -40,7 +40,7 @@
                                 </span>
                             </td>
                             <td class="px-4 sm:px-6 lg:px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $expense->payment_method }}</td>
-                            <td class="px-4 sm:px-6 lg:px-10 py-6 font-black text-red-600 italic">₹{{ number_format($expense->amount, 2) }}</td>
+                            <td class="px-4 sm:px-6 lg:px-10 py-6 font-black text-red-600 italic">₹{{ number_format($expense->amount, 0) }}</td>
                             <td class="px-4 sm:px-6 lg:px-10 py-6 text-right flex items-center justify-end gap-2">
                                 <form action="{{ route('expenses.destroy', $expense) }}" method="POST" onsubmit="return confirm('Remove this expense?')">
                                     @csrf

@@ -345,7 +345,7 @@
                                     @endif
                                 </td>
                                 <td class="text-right bold">
-                                    Rs. {{ number_format($item->rate * $item->quantity, 2) }}
+                                    Rs. {{ number_format($item->rate * $item->quantity, 0) }}
                                 </td>
                             </tr>
                         @endforeach
@@ -361,28 +361,28 @@
                             @endif
                             Total
                         </td>
-                        <td class="summary-value">Rs. {{ number_format($invoice->subtotal, 2) }}</td>
+                        <td class="summary-value">Rs. {{ number_format($invoice->subtotal, 0) }}</td>
                     </tr>
                     
                     @if($invoice->gst_enabled && $invoice->cgst > 0)
                         <tr>
                             <td class="summary-label">CGST (9%)</td>
-                            <td class="summary-value">Rs. {{ number_format($invoice->cgst, 2) }}</td>
+                            <td class="summary-value">Rs. {{ number_format($invoice->cgst, 0) }}</td>
                         </tr>
                         <tr>
                             <td class="summary-label">SGST (9%)</td>
-                            <td class="summary-value">Rs. {{ number_format($invoice->sgst, 2) }}</td>
+                            <td class="summary-value">Rs. {{ number_format($invoice->sgst, 0) }}</td>
                         </tr>
                     @elseif($invoice->gst_enabled)
                         <tr>
                             <td class="summary-label">IGST (18%)</td>
-                            <td class="summary-value">Rs. {{ number_format($invoice->igst, 2) }}</td>
+                            <td class="summary-value">Rs. {{ number_format($invoice->igst, 0) }}</td>
                         </tr>
                     @endif
 
                     <tr>
                         <td class="summary-label" style="font-size: 13px;">Grand Total</td>
-                        <td class="summary-value" style="font-size: 13px;">Rs. {{ number_format($invoice->grand_total, 2) }}</td>
+                        <td class="summary-value" style="font-size: 13px;">Rs. {{ number_format($invoice->grand_total, 0) }}</td>
                     </tr>
                 </table>
 

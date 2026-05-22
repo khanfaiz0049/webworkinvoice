@@ -16,7 +16,7 @@
             </div>
             @endif
         </td>
-        <td class="px-4 sm:px-6 lg:px-10 py-6 font-black text-slate-900 italic">₹{{ number_format($payment->amount, 2) }}</td>
+        <td class="px-4 sm:px-6 lg:px-10 py-6 font-black text-slate-900 italic">₹{{ number_format($payment->amount, 0) }}</td>
         <td class="px-4 sm:px-6 lg:px-10 py-6 text-right">
             <div class="flex items-center justify-end gap-2">
                 <form action="{{ route('payments.destroy', $payment) }}" method="POST" class="inline payment-undo-form">

@@ -57,7 +57,7 @@ class ProjectController extends Controller
             'services.*'     => 'string',
             'amount'         => 'required|numeric|min:0',
             'start_date'     => 'required|date',
-            'renewal_period' => 'required|string|in:1_month,3_months,6_months,yearly',
+            'renewal_period' => 'required|string|in:none,1_month,3_months,6_months,yearly',
             'status'         => 'required|string|in:open,closed',
             'notes'          => 'nullable|string|max:1000',
         ]);
@@ -93,11 +93,15 @@ class ProjectController extends Controller
             'services.*'     => 'string',
             'amount'         => 'required|numeric|min:0',
             'start_date'     => 'required|date',
-            'renewal_date'   => 'required|date',
-            'renewal_period' => 'required|string|in:1_month,3_months,6_months,yearly',
+            'renewal_date'   => 'nullable|date',
+            'renewal_period' => 'required|string|in:none,1_month,3_months,6_months,yearly',
             'status'         => 'required|string|in:open,closed',
             'notes'          => 'nullable|string|max:1000',
         ]);
+
+        if ($validated['renewal_period'] === 'none') {
+            $validated['renewal_date'] = null;
+        }
 
         $project->update($validated);
 
@@ -122,8 +126,12 @@ class ProjectController extends Controller
             ?: optional(Company::first())->id;
     }
 
-    private function calculateRenewalDate(string $startDate, string $period): string
+    private function calculateRenewalDate(string $startDate, string $period): ?string
     {
+        if ($period === 'none') {
+            return null;
+        }
+
         $date = Carbon::parse($startDate);
 
         return match ($period) {

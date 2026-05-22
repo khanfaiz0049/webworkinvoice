@@ -19,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->clearStaleViteHotFile();
+        // Only clean up Vite hot file in local development (not on Hostinger production)
+        if (app()->environment('local')) {
+            $this->clearStaleViteHotFile();
+        }
 
         \Illuminate\Support\Facades\View::composer('*', function ($view) {
             if (\Illuminate\Support\Facades\Auth::check()) {

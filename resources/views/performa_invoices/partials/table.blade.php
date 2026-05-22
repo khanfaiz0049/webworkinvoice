@@ -14,7 +14,7 @@
                  </div>
              @endif
          </td>
-        <td class="px-4 sm:px-6 py-6 font-black text-slate-900 italic">₹{{ number_format($invoice->grand_total, 2) }}</td>
+        <td class="px-4 sm:px-6 py-6 font-black text-slate-900 italic">₹{{ number_format($invoice->grand_total, 0) }}</td>
 
         {{-- Invoice # column: shows converted invoice number OR next available --}}
         <td class="px-4 sm:px-6 py-6">
